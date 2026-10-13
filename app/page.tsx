@@ -1,3 +1,4 @@
+import BriefingAnimation from "@/components/BriefingAnimation/BriefingAnimation";
 import BriefingForm from "@/components/BriefingForm/BriefingForm";
 import Footer from "@/components/Footer/Footer";
 import styles from "./page.module.css";
@@ -25,6 +26,13 @@ export default function Home() {
           </p>
         </header>
         <BriefingForm />
+        <section className={styles.journey} aria-label="Como funciona">
+          <p className={styles.eyebrow}>Como funciona</p>
+          <h2 className={styles.journeyTitle}>
+            Do briefing à página <span className={styles.purple}>no ar</span>
+          </h2>
+          <BriefingAnimation />
+        </section>
       </main>
       <Footer />
     </>
