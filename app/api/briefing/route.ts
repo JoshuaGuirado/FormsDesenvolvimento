@@ -3,6 +3,8 @@ import {
   ACCEPTED_EXTENSIONS,
   MAX_REFERENCES,
   MAX_UPLOAD_BYTES,
+  OTHER,
+  otherKey,
   steps,
   validateField,
   type Answers,
@@ -34,9 +36,13 @@ function sanitize(raw: unknown): Answers {
         url: String(ref?.url ?? "").slice(0, 500),
         nota: String(ref?.nota ?? "").slice(0, 1000),
       }));
+    } else if (field.type === "radio" && typeof value === "string") {
+      if (field.options?.includes(value) || (field.other && value === OTHER)) answers[field.name] = value;
     } else if (typeof value === "string") {
       answers[field.name] = value.slice(0, MAX_TEXT);
     }
+    const other = input[otherKey(field.name)];
+    if (field.other && typeof other === "string") answers[otherKey(field.name)] = other.slice(0, MAX_TEXT);
   }
   return answers;
 }
@@ -123,7 +129,7 @@ export async function POST(request: Request) {
       from: `"Briefing Linka Mídia" <${SMTP_USER}>`,
       to: BRIEFING_TO || "contato@linkamidia.com.br",
       replyTo: `"${nome.replace(/"/g, "")}" <${email}>`,
-      subject: `Novo briefing de site: ${empresa}`,
+      subject: `Novo briefing de landing page: ${empresa}`,
       text: buildText(answers, fileNames).replace(/\*/g, ""),
       html: buildHtml(answers, fileNames, `Novo briefing: ${empresa}`),
       attachments: await Promise.all(
@@ -141,9 +147,9 @@ export async function POST(request: Request) {
         from: `"Linka Mídia" <${SMTP_USER}>`,
         to: email,
         subject: "Recebemos o seu briefing — Linka Mídia",
-        text: `Olá, ${nome}!\n\nRecebemos o briefing do site da ${empresa}. Nossa equipe vai analisar as informações e entrar em contato em breve.\n\nUma cópia das suas respostas está abaixo.\n\n${buildText(answers, fileNames).replace(/\*/g, "")}\n\nLinka Mídia`,
+        text: `Olá, ${nome}!\n\nRecebemos o briefing da landing page da ${empresa}. Nossa equipe vai analisar as informações e entrar em contato em breve.\n\nUma cópia das suas respostas está abaixo.\n\n${buildText(answers, fileNames).replace(/\*/g, "")}\n\nLinka Mídia`,
         html: `<p style="font-family:Arial,sans-serif;max-width:640px;margin:24px auto 0;padding:0 24px;font-size:15px">
-                 Olá, ${escapeHtml(nome)}! Recebemos o briefing do site da ${escapeHtml(empresa)}.
+                 Olá, ${escapeHtml(nome)}! Recebemos o briefing da landing page da ${escapeHtml(empresa)}.
                  Nossa equipe vai analisar as informações e entrar em contato em breve. Uma cópia das suas respostas está abaixo.
                </p>${buildHtml(answers, fileNames, "Suas respostas")}`,
       })

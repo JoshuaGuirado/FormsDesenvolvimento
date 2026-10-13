@@ -1,11 +1,12 @@
-import { isFilled, isVisible, steps, type Answers, type Reference } from "./questions";
+import { isFilled, isVisible, OTHER, otherKey, steps, type Answers, type Field, type Reference } from "./questions";
 
 type Line = { label: string; value: string };
 type Section = { title: string; lines: Line[] };
 
-function formatValue(value: Answers[string]): string {
+function formatValue(field: Field, answers: Answers): string {
+  const value = answers[field.name];
   if (typeof value === "string") {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.split("-").reverse().join("/");
+    if (field.other && value === OTHER) return `${OTHER}: ${String(answers[otherKey(field.name)] ?? "").trim()}`;
     return value.trim();
   }
   if (value.length > 0 && typeof value[0] === "object") {
@@ -21,10 +22,10 @@ function formatValue(value: Answers[string]): string {
 export function buildSections(answers: Answers): Section[] {
   return steps
     .map((step) => ({
-      title: `${step.title} ${step.highlight}`,
+      title: `${step.title} ${step.highlight}`.trim(),
       lines: step.fields
         .filter((field) => field.type !== "files" && isVisible(field, answers) && isFilled(answers[field.name]))
-        .map((field) => ({ label: field.label, value: formatValue(answers[field.name]) })),
+        .map((field) => ({ label: field.label, value: formatValue(field, answers) })),
     }))
     .filter((section) => section.lines.length > 0);
 }
@@ -33,7 +34,7 @@ export function buildText(answers: Answers, fileNames: string[] = []): string {
   const sections = buildSections(answers).map(
     (section) =>
       `*${section.title.toUpperCase()}*\n` +
-      section.lines.map((line) => `${line.label}:\n${line.value}`).join("\n\n"),
+      section.lines.map((line) => `${line.label}${line.label.endsWith("?") ? "" : ":"}\n${line.value}`).join("\n\n"),
   );
   if (fileNames.length) sections.push(`*ARQUIVOS ANEXADOS*\n${fileNames.join("\n")}`);
   return sections.join("\n\n");

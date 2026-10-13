@@ -1,0 +1,283 @@
+.wrapper {
+  position: relative;
+  max-width: 860px;
+  margin: 0 auto;
+  scroll-margin-top: 24px;
+}
+.purple {
+  color: #9272f1;
+}
+
+/* Progresso */
+.stepper {
+  margin-bottom: 24px;
+}
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #d6d6d6;
+}
+.progressTrack {
+  height: 6px;
+  background: #ffffff14;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #7c61d6, #9272f1, #b39cf7);
+  border-radius: 999px;
+  box-shadow: 0 0 16px #9272f199;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.stepList {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.stepDot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  font-family: inherit;
+  color: #6b6b6b;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.stepDot:disabled {
+  cursor: default;
+}
+.dotNumber {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #333;
+  border-radius: 50%;
+  background: #161616;
+  transition: all 0.3s;
+}
+.dotLabel {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  text-align: center;
+}
+.stepDot:not(:disabled):hover .dotNumber {
+  border-color: #9272f1;
+}
+.complete {
+  color: #c9bcf8;
+}
+.complete .dotNumber {
+  color: #fff;
+  background: #9272f133;
+  border-color: #9272f180;
+}
+.active {
+  color: #fff;
+}
+.active .dotNumber {
+  color: #fff;
+  background: #9272f1;
+  border-color: #9272f1;
+  box-shadow: 0 0 18px #9272f199;
+}
+
+/* Card */
+.card {
+  position: relative;
+  padding: 44px;
+  background-color: #161616;
+  border: 1px solid #ffffff0f;
+  border-radius: 24px;
+  box-shadow: 0 40px 80px #000000b3;
+}
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.stepHeader {
+  margin-bottom: 32px;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #9272f1;
+}
+.stepTitle {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.stepDescription {
+  margin: 10px 0 0;
+  font-size: 1.05rem;
+  color: #a8a8a8;
+}
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 20px;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid #ffffff0f;
+}
+
+/* Erro no envio */
+.alert {
+  margin-top: 28px;
+  padding: 18px 20px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #f8d7da;
+  background: #f0717814;
+  border: 1px solid #f0717866;
+  border-radius: 14px;
+}
+.alert p {
+  margin: 0 0 12px;
+}
+.alertLink {
+  display: inline-block;
+  padding: 10px 18px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: #25d366;
+  border-radius: 10px;
+}
+.alertLink:hover {
+  background: #1ebe5a;
+}
+
+/* Revisão */
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.reviewSection {
+  padding: 20px 22px;
+  background: #1f1f1f;
+  border: 1px solid #ffffff0f;
+  border-radius: 16px;
+}
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.reviewHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #9272f1;
+}
+.editButton {
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d6d6d6;
+  background: transparent;
+  border: 1px solid #ffffff26;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.editButton:hover {
+  color: #fff;
+  border-color: #9272f1;
+}
+.review dl {
+  margin: 0;
+}
+.reviewLine {
+  padding: 10px 0;
+  border-top: 1px solid #ffffff0a;
+}
+.reviewLine dt {
+  font-size: 0.82rem;
+  color: #8f8f8f;
+}
+.reviewLine dd {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.reviewEmpty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b6b6b;
+}
+
+/* Sucesso */
+.done {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  scroll-margin-top: 24px;
+}
+.doneIcon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 24px;
+  color: #fff;
+  background: #9272f1;
+  border-radius: 50%;
+  box-shadow: 0 0 40px #9272f199;
+}
+.doneText {
+  margin: 16px 0 32px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #c4c4c4;
+}
+
+@media (max-width: 760px) {
+  .stepList {
+    display: none;
+  }
+  .card {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+  .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .actions > span:empty {
+    display: none;
+  }
+}

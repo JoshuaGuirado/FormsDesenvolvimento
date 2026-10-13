@@ -7,7 +7,6 @@ export type FieldType =
   | "email"
   | "tel"
   | "url"
-  | "date"
   | "textarea"
   | "radio"
   | "checkbox"
@@ -22,6 +21,8 @@ export type Field = {
   placeholder?: string;
   help?: string;
   options?: string[];
+  /** Radio com a opção "Outro" e um campo para descrever. */
+  other?: boolean;
   /** Ocupa meia largura no desktop (dois campos lado a lado). */
   half?: boolean;
   /** Só aparece quando outro campo tem um destes valores. */
@@ -38,141 +39,122 @@ export type Step = {
 
 export const steps: Step[] = [
   {
-    id: "contato",
-    title: "Vamos nos",
-    highlight: "conhecer",
-    description: "Seus dados para conversarmos sobre o projeto.",
+    id: "cliente",
+    title: "Informações do",
+    highlight: "cliente",
+    description: "Dados básicos de contato e identificação.",
     fields: [
-      { name: "nome", label: "Seu nome", type: "text", required: true, half: true, placeholder: "Nome e sobrenome" },
-      { name: "empresa", label: "Nome da empresa", type: "text", required: true, half: true, placeholder: "Como a marca é conhecida" },
+      { name: "nome", label: "Nome completo", type: "text", required: true, half: true },
+      { name: "empresa", label: "Nome da empresa ou marca", type: "text", required: true, half: true },
       { name: "email", label: "E-mail", type: "email", required: true, half: true, placeholder: "voce@empresa.com.br" },
       { name: "whatsapp", label: "WhatsApp", type: "tel", required: true, half: true, placeholder: "(44) 99999-9999" },
-      { name: "cidade", label: "Cidade / estado", type: "text", half: true, placeholder: "Maringá - PR" },
-      { name: "segmento", label: "Segmento de atuação", type: "text", half: true, placeholder: "Ex.: clínica odontológica" },
-      { name: "siteAtual", label: "Site atual (se tiver)", type: "url", half: true, placeholder: "https://" },
-      { name: "instagram", label: "Instagram", type: "text", half: true, placeholder: "@suaempresa" },
+      { name: "siteAtual", label: "Você já tem um site? Se sim, qual é o link?", type: "url", placeholder: "https://" },
     ],
   },
   {
-    id: "negocio",
-    title: "Sobre o seu",
-    highlight: "negócio",
-    description: "Quanto mais entendermos a sua empresa, mais o site vai vender por você.",
+    id: "produto",
+    title: "Sobre o produto",
+    highlight: "ou serviço",
+    description: "Nos conte mais sobre o que você oferece.",
     fields: [
       {
-        name: "sobreEmpresa",
-        label: "Conte um pouco sobre a empresa",
-        type: "textarea",
+        name: "oQueVende",
+        label: "O que você vende?",
+        type: "radio",
         required: true,
-        placeholder: "História, o que faz, há quanto tempo está no mercado...",
+        other: true,
+        options: ["Produto físico", "Produto digital / infoproduto", "Serviço", "SaaS / Software"],
       },
+      { name: "descricao", label: "Descreva seu produto ou serviço em poucas linhas", type: "textarea", required: true },
+      { name: "beneficio", label: "Qual é o principal benefício para o cliente?", type: "textarea", required: true },
+      { name: "preco", label: "Qual é o preço ou faixa de preço?", type: "text" },
       {
-        name: "produtos",
-        label: "Principais produtos ou serviços",
-        type: "textarea",
-        required: true,
-        placeholder: "Liste os que devem aparecer no site, do mais importante para o menos",
-      },
-      {
-        name: "publico",
-        label: "Quem é o seu cliente ideal?",
-        type: "textarea",
-        required: true,
-        placeholder: "Idade, região, profissão, o que ele procura, que problema você resolve para ele",
-      },
-      {
-        name: "diferenciais",
-        label: "Por que o cliente deve escolher você e não o concorrente?",
-        type: "textarea",
-        placeholder: "Diferenciais, prêmios, garantias, números (anos de mercado, clientes atendidos...)",
-      },
-      {
-        name: "concorrentes",
-        label: "Principais concorrentes",
-        type: "textarea",
-        placeholder: "Nomes ou sites dos concorrentes",
-      },
-    ],
-  },
-  {
-    id: "projeto",
-    title: "O seu",
-    highlight: "projeto",
-    description: "O que vamos construir e qual resultado ele precisa entregar.",
-    fields: [
-      {
-        name: "tipoProjeto",
-        label: "O que você precisa?",
+        name: "provaSocial",
+        label: "Você tem prova social? (depoimentos, casos de sucesso, números)",
         type: "radio",
         required: true,
         options: [
-          "Landing page (página única focada em conversão)",
-          "Site institucional (várias páginas)",
-          "Site + landing pages de campanha",
-          "Catálogo / loja virtual",
-          "Ainda não sei, quero uma recomendação",
+          "Sim, tenho depoimentos em texto",
+          "Sim, tenho depoimentos em vídeo",
+          "Sim, tenho casos de sucesso",
+          "Sim, tenho números e resultados comprovados",
+          "Não tenho ainda",
         ],
       },
+    ],
+  },
+  {
+    id: "objetivo",
+    title: "Objetivo da",
+    highlight: "landing page",
+    description: "Qual é a missão desta página?",
+    fields: [
       {
-        name: "objetivos",
-        label: "Qual o principal objetivo do site?",
-        type: "checkbox",
+        name: "objetivo",
+        label: "Qual é o objetivo principal desta landing page?",
+        type: "radio",
         required: true,
-        help: "Marque quantos quiser.",
+        other: true,
         options: [
-          "Gerar contatos no WhatsApp",
-          "Captar leads por formulário",
-          "Vender online",
-          "Receber agendamentos",
-          "Apresentar a empresa e passar credibilidade",
-          "Divulgar um lançamento ou evento",
-          "Apoiar campanhas de tráfego pago",
+          "Capturar leads (nome e e-mail)",
+          "Vender diretamente",
+          "Agendar uma consulta ou reunião",
+          "Inscrição em evento ou webinar",
+          "Lançamento de produto",
         ],
       },
       {
-        name: "acaoPrincipal",
-        label: "Qual ação o visitante deve fazer ao entrar no site?",
+        name: "acao",
+        label: "Qual ação você quer que o visitante tome?",
         type: "text",
-        placeholder: "Ex.: clicar no botão do WhatsApp e pedir um orçamento",
+        required: true,
+        placeholder: "Ex.: \"Quero meu orçamento grátis\"",
       },
       {
-        name: "secoes",
-        label: "Quais páginas ou seções o site deve ter?",
-        type: "checkbox",
-        options: [
-          "Início / apresentação",
-          "Sobre nós",
-          "Serviços",
-          "Produtos",
-          "Portfólio / cases",
-          "Depoimentos",
-          "Equipe",
-          "Perguntas frequentes",
-          "Blog",
-          "Localização / mapa",
-          "Contato",
-        ],
-      },
-      {
-        name: "funcionalidades",
-        label: "Funcionalidades desejadas",
-        type: "checkbox",
-        options: [
-          "Botão flutuante de WhatsApp",
-          "Formulário de contato",
-          "Agendamento online",
-          "Integração com Instagram",
-          "Pixel do Meta / Google Analytics",
-          "Pagamento online",
-          "Área de login / membros",
-          "Versão em outro idioma",
-        ],
-      },
-      {
-        name: "outrasFuncionalidades",
-        label: "Algo mais que o site precisa ter?",
+        name: "lpAtual",
+        label: "Você já tem uma landing page? Se sim, compartilhe o link e diga o que não funciona",
         type: "textarea",
-        placeholder: "Integrações, sistemas que você já usa, ideias...",
+      },
+      {
+        name: "resultadoEsperado",
+        label: "Qual resultado você espera alcançar com essa LP?",
+        type: "textarea",
+        placeholder: "Ex.: 100 leads por mês, 10% de conversão",
+      },
+    ],
+  },
+  {
+    id: "publico",
+    title: "",
+    highlight: "Público-alvo",
+    description: "Quanto melhor entendermos o seu cliente, melhor será a página.",
+    fields: [
+      {
+        name: "clienteIdeal",
+        label: "Quem é o seu cliente ideal? Descreva em detalhes (profissão, situação de vida, contexto)",
+        type: "textarea",
+        required: true,
+      },
+      {
+        name: "faixaEtaria",
+        label: "Faixa etária predominante do público",
+        type: "radio",
+        required: true,
+        options: ["18–24 anos", "25–34 anos", "35–44 anos", "45–54 anos", "55+ anos", "Variado"],
+      },
+      { name: "dores", label: "Quais são as principais dores e problemas do seu cliente?", type: "textarea", required: true },
+      {
+        name: "desejos",
+        label: "O que ele deseja conquistar ou resolver com o seu produto/serviço?",
+        type: "textarea",
+        required: true,
+      },
+      { name: "porQueNaoResolveu", label: "Por que ele ainda não resolveu esse problema?", type: "textarea" },
+      {
+        name: "objecoes",
+        label: "Quais objeções ele costuma ter antes de comprar?",
+        type: "textarea",
+        placeholder: "Ex.: \"é muito caro\", \"não tenho tempo\"",
       },
     ],
   },
@@ -180,142 +162,179 @@ export const steps: Step[] = [
     id: "identidade",
     title: "Identidade",
     highlight: "visual",
-    description: "Envie o que você já tem da sua marca. Se o arquivo for grande, cole um link do Google Drive ou WeTransfer.",
+    description: "Vamos garantir que a LP tenha a cara da sua marca.",
     fields: [
       {
         name: "temIdentidade",
-        label: "Sua marca já tem identidade visual?",
+        label: "Você já tem uma identidade visual definida?",
         type: "radio",
         required: true,
         options: [
-          "Sim, tenho manual de marca completo",
-          "Tenho apenas o logotipo",
-          "Não tenho, preciso criar",
+          "Sim, tenho logo e manual de marca completo",
+          "Sim, tenho logo mas sem manual definido",
+          "Tenho apenas algumas referências de estilo",
+          "Não tenho identidade visual ainda",
         ],
       },
       {
         name: "arquivosMarca",
-        label: "Logotipo, manual de marca e outros arquivos",
+        label: "Envie seu logo, manual de marca e outros arquivos",
         type: "files",
         help: "PDF, PNG, JPG, SVG, AI, EPS ou ZIP — até 4 MB no total.",
         showIf: {
           field: "temIdentidade",
-          values: ["Sim, tenho manual de marca completo", "Tenho apenas o logotipo"],
+          values: [
+            "Sim, tenho logo e manual de marca completo",
+            "Sim, tenho logo mas sem manual definido",
+            "Tenho apenas algumas referências de estilo",
+          ],
         },
       },
       {
         name: "linkArquivos",
-        label: "Link para os arquivos (Drive, WeTransfer, Dropbox...)",
+        label: "Arquivos grandes, fotos ou vídeos? Cole aqui o link (Google Drive, WeTransfer, Dropbox...)",
         type: "url",
         placeholder: "https://",
-        help: "Use para arquivos grandes, fotos e vídeos. Deixe o link com acesso liberado.",
+        help: "Deixe o link com acesso liberado para qualquer pessoa.",
       },
-      { name: "cores", label: "Cores da marca", type: "text", half: true, placeholder: "Ex.: azul-marinho e dourado, #0A2342" },
-      { name: "fontes", label: "Fontes (se souber)", type: "text", half: true, placeholder: "Ex.: Montserrat" },
+      { name: "cores", label: "Quais são as cores principais da marca?", type: "text", placeholder: "Ex.: azul escuro #003366, branco" },
+      {
+        name: "referencias",
+        label: "Links de sites ou LPs que você gosta como referência visual",
+        type: "references",
+        help: "Adicione até 6 sites e conte o que chamou sua atenção em cada um.",
+      },
       {
         name: "estilo",
-        label: "Como você quer que o site seja percebido?",
+        label: "Como você descreveria o estilo visual desejado?",
         type: "checkbox",
+        help: "Selecione todos que se aplicam.",
         options: [
-          "Moderno",
-          "Minimalista",
-          "Sofisticado / premium",
-          "Corporativo",
-          "Jovem e descontraído",
-          "Tecnológico",
-          "Acolhedor",
-          "Ousado e chamativo",
+          "Moderno e tecnológico",
+          "Minimalista e clean",
+          "Colorido e vibrante",
+          "Sóbrio e corporativo",
+          "Descontraído e criativo",
+          "Elegante e premium",
         ],
       },
+    ],
+  },
+  {
+    id: "conteudo",
+    title: "Conteúdo e",
+    highlight: "tom de voz",
+    description: "Como você se comunica com o seu público?",
+    fields: [
       {
-        name: "materiais",
-        label: "Fotos e vídeos para o site",
+        name: "tom",
+        label: "Qual o tom de comunicação da marca?",
         type: "radio",
+        required: true,
         options: [
-          "Tenho fotos e vídeos profissionais",
-          "Tenho alguns materiais, mas não profissionais",
-          "Preciso de produção (fotos / vídeos)",
-          "Pode usar banco de imagens",
+          "Formal e profissional",
+          "Amigável e próximo",
+          "Descontraído e divertido",
+          "Técnico e especializado",
+          "Inspirador e motivacional",
         ],
       },
       {
         name: "textos",
-        label: "Textos do site",
+        label: "Você tem textos prontos ou prefere que criemos?",
         type: "radio",
-        options: ["Já tenho os textos prontos", "Tenho parte, preciso de ajuda", "Quero que a Linka escreva"],
+        required: true,
+        options: [
+          "Tenho textos prontos para usar",
+          "Tenho rascunhos que precisam de ajuste",
+          "Prefiro que vocês criem do zero",
+          "Misto: tenho parte e precisam criar o restante",
+        ],
+      },
+      {
+        name: "fotos",
+        label: "Você tem fotos ou imagens do produto/serviço?",
+        type: "radio",
+        required: true,
+        options: [
+          "Sim, tenho fotos profissionais",
+          "Sim, mas são fotos amadoras / de celular",
+          "Não tenho, precisarei de banco de imagens",
+          "Tenho imagens mas precisam de edição",
+        ],
+      },
+      {
+        name: "video",
+        label: "Você tem vídeo para incluir na LP? (VSL, depoimento, etc.) Se sim, compartilhe o link",
+        type: "url",
+        placeholder: "https://",
+      },
+      { name: "palavrasChave", label: "Tem palavras-chave, frases ou slogans que devem aparecer na LP?", type: "textarea" },
+    ],
+  },
+  {
+    id: "concorrencia",
+    title: "",
+    highlight: "Concorrência",
+    description: "Nos ajude a entender o mercado em que você está inserido.",
+    fields: [
+      { name: "concorrentes", label: "Quem são seus principais concorrentes? (links dos sites)", type: "textarea" },
+      { name: "diferencial", label: "O que te diferencia dos seus concorrentes?", type: "textarea", required: true },
+      {
+        name: "concorrenteReferencia",
+        label: "Tem algum concorrente que você admira como referência de comunicação ou design?",
+        type: "text",
       },
     ],
   },
   {
-    id: "referencias",
-    title: "Suas",
-    highlight: "referências",
-    description: "Sites que você admira, do seu segmento ou não. Conte o que chamou sua atenção em cada um.",
+    id: "integracoes",
+    title: "Integrações",
+    highlight: "técnicas",
+    description: "Informações para garantir que tudo funcione perfeitamente.",
     fields: [
-      {
-        name: "referencias",
-        label: "Sites de referência",
-        type: "references",
-        help: "Adicione até 6 sites.",
-      },
-      {
-        name: "naoGosta",
-        label: "Algo que você NÃO quer no seu site?",
-        type: "textarea",
-        placeholder: "Cores, estilos, sites que você não gosta...",
-      },
-    ],
-  },
-  {
-    id: "detalhes",
-    title: "Últimos",
-    highlight: "detalhes",
-    description: "Informações técnicas e prazos. Se não souber alguma, tudo bem — deixe em branco.",
-    fields: [
-      {
-        name: "temDominio",
-        label: "Você já tem domínio (endereço do site)?",
-        type: "radio",
-        options: ["Sim", "Não, preciso registrar", "Não sei"],
-      },
       {
         name: "dominio",
-        label: "Qual o domínio?",
-        type: "text",
-        placeholder: "suaempresa.com.br",
-        showIf: { field: "temDominio", values: ["Sim"] },
-      },
-      {
-        name: "emailCorporativo",
-        label: "Precisa de e-mails corporativos (voce@suaempresa.com.br)?",
+        label: "Você tem domínio próprio?",
         type: "radio",
-        options: ["Sim", "Já tenho", "Não"],
+        options: ["Sim, já tenho domínio registrado", "Sim, mas preciso configurar", "Não, precisarei contratar", "Não sei"],
       },
       {
-        name: "prazo",
-        label: "Para quando você precisa do site?",
+        name: "hospedagem",
+        label: "Onde será hospedada a landing page?",
         type: "radio",
-        options: ["O quanto antes", "Em até 30 dias", "Em até 60 dias", "Sem pressa"],
+        other: true,
+        options: [
+          "WordPress",
+          "Elementor / WP Page Builder",
+          "Klicpages",
+          "LeadPages",
+          "ClickFunnels",
+          "Hotmart / Kiwify / Eduzz",
+          "HTML puro",
+          "Não sei / pode decidir por mim",
+        ],
       },
       {
-        name: "dataImportante",
-        label: "Existe alguma data importante?",
-        type: "date",
-        half: true,
-        help: "Lançamento, evento, campanha...",
+        name: "integracoes",
+        label: "Precisa integrar com alguma ferramenta?",
+        type: "checkbox",
+        help: "Selecione todas que se aplicam.",
+        options: [
+          "CRM (ex: RD Station, HubSpot)",
+          "E-mail marketing (ex: Mailchimp, ActiveCampaign)",
+          "WhatsApp / WhatsApp Business",
+          "Plataforma de pagamento (ex: Hotmart, Stripe)",
+          "Agendamento online (ex: Calendly)",
+          "Nenhuma integração necessária",
+        ],
       },
       {
-        name: "aprovador",
-        label: "Quem vai aprovar o projeto?",
-        type: "text",
-        half: true,
-        placeholder: "Nome e cargo",
-      },
-      {
-        name: "observacoes",
-        label: "Mais alguma coisa que devemos saber?",
-        type: "textarea",
-        placeholder: "Fique à vontade para contar tudo",
+        name: "pixels",
+        label: "Precisa de pixel de rastreamento?",
+        type: "checkbox",
+        help: "Selecione todos que se aplicam.",
+        options: ["Meta Ads (Facebook/Instagram)", "Google Ads / Google Analytics", "TikTok Ads", "LinkedIn Ads", "Não preciso / não sei"],
       },
     ],
   },
@@ -323,6 +342,10 @@ export const steps: Step[] = [
 
 export type Reference = { url: string; nota: string };
 export type Answers = Record<string, string | string[] | Reference[]>;
+
+export const OTHER = "Outro";
+/** Onde fica o texto digitado quando o cliente escolhe "Outro". */
+export const otherKey = (name: string) => `${name}Outro`;
 
 export const MAX_REFERENCES = 6;
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -351,6 +374,9 @@ export function validateField(field: Field, answers: Answers): string | null {
   }
   if (typeof value !== "string" || !value.trim()) return null;
 
+  if (field.other && value === OTHER && !String(answers[otherKey(field.name)] ?? "").trim()) {
+    return "Descreva a opção \"Outro\".";
+  }
   if (field.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
     return "Informe um e-mail válido.";
   }
