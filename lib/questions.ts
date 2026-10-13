@@ -288,8 +288,8 @@ export const steps: Step[] = [
     ],
   },
   {
-    id: "integracoes",
-    title: "Integrações",
+    id: "tecnico",
+    title: "Informações",
     highlight: "técnicas",
     description: "Informações para garantir que tudo funcione perfeitamente.",
     fields: [
@@ -298,36 +298,6 @@ export const steps: Step[] = [
         label: "Você tem domínio próprio?",
         type: "radio",
         options: ["Sim, já tenho domínio registrado", "Sim, mas preciso configurar", "Não, precisarei contratar", "Não sei"],
-      },
-      {
-        name: "hospedagem",
-        label: "Onde será hospedada a landing page?",
-        type: "radio",
-        other: true,
-        options: [
-          "WordPress",
-          "Elementor / WP Page Builder",
-          "Klicpages",
-          "LeadPages",
-          "ClickFunnels",
-          "Hotmart / Kiwify / Eduzz",
-          "HTML puro",
-          "Não sei / pode decidir por mim",
-        ],
-      },
-      {
-        name: "integracoes",
-        label: "Precisa integrar com alguma ferramenta?",
-        type: "checkbox",
-        help: "Selecione todas que se aplicam.",
-        options: [
-          "CRM (ex: RD Station, HubSpot)",
-          "E-mail marketing (ex: Mailchimp, ActiveCampaign)",
-          "WhatsApp / WhatsApp Business",
-          "Plataforma de pagamento (ex: Hotmart, Stripe)",
-          "Agendamento online (ex: Calendly)",
-          "Nenhuma integração necessária",
-        ],
       },
       {
         name: "pixels",
