@@ -21,8 +21,10 @@ export type Field = {
   placeholder?: string;
   help?: string;
   options?: string[];
-  /** Radio com a opção "Outro" e um campo para descrever. */
+  /** Inclui a opção "Outro" com um campo para descrever. */
   other?: boolean;
+  /** Opções que não combinam com as demais (ex.: "Não tenho"): marcar uma desmarca o resto. */
+  exclusive?: string[];
   /** Ocupa meia largura no desktop (dois campos lado a lado). */
   half?: boolean;
   /** Só aparece quando outro campo tem um destes valores. */
@@ -60,7 +62,7 @@ export const steps: Step[] = [
       {
         name: "oQueVende",
         label: "O que você vende?",
-        type: "radio",
+        type: "checkbox",
         required: true,
         other: true,
         options: ["Produto físico", "Produto digital / infoproduto", "Serviço", "SaaS / Software"],
@@ -71,7 +73,7 @@ export const steps: Step[] = [
       {
         name: "provaSocial",
         label: "Você tem prova social? (depoimentos, casos de sucesso, números)",
-        type: "radio",
+        type: "checkbox",
         required: true,
         options: [
           "Sim, tenho depoimentos em texto",
@@ -80,6 +82,7 @@ export const steps: Step[] = [
           "Sim, tenho números e resultados comprovados",
           "Não tenho ainda",
         ],
+        exclusive: ["Não tenho ainda"],
       },
     ],
   },
@@ -91,8 +94,8 @@ export const steps: Step[] = [
     fields: [
       {
         name: "objetivo",
-        label: "Qual é o objetivo principal desta landing page?",
-        type: "radio",
+        label: "Quais são os objetivos desta landing page?",
+        type: "checkbox",
         required: true,
         other: true,
         options: [
@@ -137,10 +140,11 @@ export const steps: Step[] = [
       },
       {
         name: "faixaEtaria",
-        label: "Faixa etária predominante do público",
-        type: "radio",
+        label: "Faixa etária do público",
+        type: "checkbox",
         required: true,
         options: ["18–24 anos", "25–34 anos", "35–44 anos", "45–54 anos", "55+ anos", "Variado"],
+        exclusive: ["Variado"],
       },
       { name: "dores", label: "Quais são as principais dores e problemas do seu cliente?", type: "textarea", required: true },
       {
@@ -167,7 +171,7 @@ export const steps: Step[] = [
       {
         name: "temIdentidade",
         label: "Você já tem uma identidade visual definida?",
-        type: "radio",
+        type: "checkbox",
         required: true,
         options: [
           "Sim, tenho logo e manual de marca completo",
@@ -175,6 +179,7 @@ export const steps: Step[] = [
           "Tenho apenas algumas referências de estilo",
           "Não tenho identidade visual ainda",
         ],
+        exclusive: ["Não tenho identidade visual ainda"],
       },
       {
         name: "arquivosMarca",
@@ -208,7 +213,6 @@ export const steps: Step[] = [
         name: "estilo",
         label: "Como você descreveria o estilo visual desejado?",
         type: "checkbox",
-        help: "Selecione todos que se aplicam.",
         options: [
           "Moderno e tecnológico",
           "Minimalista e clean",
@@ -229,7 +233,7 @@ export const steps: Step[] = [
       {
         name: "tom",
         label: "Qual o tom de comunicação da marca?",
-        type: "radio",
+        type: "checkbox",
         required: true,
         options: [
           "Formal e profissional",
@@ -242,7 +246,7 @@ export const steps: Step[] = [
       {
         name: "textos",
         label: "Você tem textos prontos ou prefere que criemos?",
-        type: "radio",
+        type: "checkbox",
         required: true,
         options: [
           "Tenho textos prontos para usar",
@@ -254,7 +258,7 @@ export const steps: Step[] = [
       {
         name: "fotos",
         label: "Você tem fotos ou imagens do produto/serviço?",
-        type: "radio",
+        type: "checkbox",
         required: true,
         options: [
           "Sim, tenho fotos profissionais",
@@ -296,15 +300,16 @@ export const steps: Step[] = [
       {
         name: "dominio",
         label: "Você tem domínio próprio?",
-        type: "radio",
+        type: "checkbox",
         options: ["Sim, já tenho domínio registrado", "Sim, mas preciso configurar", "Não, precisarei contratar", "Não sei"],
+        exclusive: ["Não sei"],
       },
       {
         name: "pixels",
         label: "Precisa de pixel de rastreamento?",
         type: "checkbox",
-        help: "Selecione todos que se aplicam.",
         options: ["Meta Ads (Facebook/Instagram)", "Google Ads / Google Analytics", "TikTok Ads", "LinkedIn Ads", "Não preciso / não sei"],
+        exclusive: ["Não preciso / não sei"],
       },
     ],
   },
@@ -321,10 +326,16 @@ export const MAX_REFERENCES = 6;
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 export const ACCEPTED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".svg", ".ai", ".eps", ".zip"];
 
+/** Opções marcadas de uma pergunta de múltipla escolha (aceita o formato antigo, de uma opção só). */
+export function selectedOptions(value: Answers[string] | undefined): string[] {
+  if (typeof value === "string") return value ? [value] : [];
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
 export function isVisible(field: Field, answers: Answers) {
   if (!field.showIf) return true;
-  const value = answers[field.showIf.field];
-  return typeof value === "string" && field.showIf.values.includes(value);
+  const { values } = field.showIf;
+  return selectedOptions(answers[field.showIf.field]).some((option) => values.includes(option));
 }
 
 export function isFilled(value: Answers[string] | undefined) {
@@ -342,11 +353,11 @@ export function validateField(field: Field, answers: Answers): string | null {
   if (field.required && !isFilled(value)) {
     return field.type === "checkbox" || field.type === "radio" ? "Escolha pelo menos uma opção." : "Campo obrigatório.";
   }
-  if (typeof value !== "string" || !value.trim()) return null;
-
-  if (field.other && value === OTHER && !String(answers[otherKey(field.name)] ?? "").trim()) {
+  if (field.other && selectedOptions(value).includes(OTHER) && !String(answers[otherKey(field.name)] ?? "").trim()) {
     return "Descreva a opção \"Outro\".";
   }
+  if (typeof value !== "string" || !value.trim()) return null;
+
   if (field.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
     return "Informe um e-mail válido.";
   }

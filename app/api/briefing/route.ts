@@ -5,6 +5,7 @@ import {
   MAX_UPLOAD_BYTES,
   OTHER,
   otherKey,
+  selectedOptions,
   steps,
   validateField,
   type Answers,
@@ -27,9 +28,9 @@ function sanitize(raw: unknown): Answers {
 
   for (const field of steps.flatMap((step) => step.fields)) {
     const value = input[field.name];
-    if (field.type === "checkbox" && Array.isArray(value)) {
-      answers[field.name] = value.filter(
-        (item): item is string => typeof item === "string" && !!field.options?.includes(item),
+    if (field.type === "checkbox") {
+      answers[field.name] = selectedOptions(value as Answers[string]).filter(
+        (item) => field.options?.includes(item) || (field.other && item === OTHER),
       );
     } else if (field.type === "references" && Array.isArray(value)) {
       answers[field.name] = value.slice(0, MAX_REFERENCES).map((ref) => ({

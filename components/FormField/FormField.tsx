@@ -7,6 +7,7 @@ import {
   MAX_UPLOAD_BYTES,
   OTHER,
   otherKey,
+  selectedOptions,
   type Answers,
   type Field,
   type Reference,
@@ -70,6 +71,7 @@ export default function FormField({ field, answers, error, files, onChange, onFi
 
   const isGroup = field.type === "radio" || field.type === "checkbox" || field.type === "references";
   const Label = isGroup ? "p" : "label";
+  const help = field.help ?? (field.type === "checkbox" ? "Selecione todas que se aplicam." : undefined);
 
   return (
     <div className={`${styles.field} ${field.half ? styles.half : ""}`} data-field={field.name}>
@@ -77,7 +79,7 @@ export default function FormField({ field, answers, error, files, onChange, onFi
         {field.label}
         {field.required && <span className={styles.required}> *</span>}
       </Label>
-      {field.help && <p className={styles.help}>{field.help}</p>}
+      {help && <p className={styles.help}>{help}</p>}
       {control}
       {error && <p className={styles.error}>{error}</p>}
     </div>
@@ -86,13 +88,16 @@ export default function FormField({ field, answers, error, files, onChange, onFi
 
 function Choices({ field, answers, onChange }: Pick<FormFieldProps, "field" | "answers" | "onChange">) {
   const multiple = field.type === "checkbox";
-  const value = answers[field.name];
-  const selected = multiple ? ((value as string[]) ?? []) : [typeof value === "string" ? value : ""];
+  const selected = selectedOptions(answers[field.name]);
   const options = field.other ? [...(field.options ?? []), OTHER] : (field.options ?? []);
 
   const toggle = (option: string) => {
     if (!multiple) return onChange(field.name, option);
-    onChange(field.name, selected.includes(option) ? selected.filter((o) => o !== option) : [...selected, option]);
+    if (selected.includes(option)) return onChange(field.name, selected.filter((o) => o !== option));
+    // "Não tenho", "Não sei"... não combinam com as outras opções.
+    const exclusive = field.exclusive ?? [];
+    const kept = exclusive.includes(option) ? [] : selected.filter((o) => !exclusive.includes(o));
+    onChange(field.name, [...kept, option]);
   };
 
   return (
@@ -113,7 +118,7 @@ function Choices({ field, answers, onChange }: Pick<FormFieldProps, "field" | "a
           </label>
         );
       })}
-      {field.other && value === OTHER && (
+      {field.other && selected.includes(OTHER) && (
         <input
           className={styles.input}
           placeholder="Descreva"

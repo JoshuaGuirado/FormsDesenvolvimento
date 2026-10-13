@@ -15,7 +15,9 @@ function formatValue(field: Field, answers: Answers): string {
       .map((ref, i) => `${i + 1}. ${ref.url.trim()}${ref.nota.trim() ? ` — ${ref.nota.trim()}` : ""}`)
       .join("\n");
   }
-  return (value as string[]).join(", ");
+  return (value as string[])
+    .map((item) => (field.other && item === OTHER ? `${OTHER}: ${String(answers[otherKey(field.name)] ?? "").trim()}` : item))
+    .join(", ");
 }
 
 /** Respostas agrupadas por etapa, só com o que foi preenchido. */
