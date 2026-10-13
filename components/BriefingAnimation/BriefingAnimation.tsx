@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import {
   AnimatePresence,
   MotionConfig,
@@ -59,6 +59,10 @@ const STEPS = [
   { id: "design", label: "Design", dur: 3400, caption: "Sua marca, seu tom de voz e seu público em cada detalhe." },
   { id: "no-ar", label: "No ar", dur: 5000, caption: "Página no ar, trabalhando por resultados reais." },
 ];
+
+/** false quando a animação está fora da tela: os loops infinitos param. */
+const OnScreen = createContext(true);
+const loop = (onScreen: boolean) => (onScreen ? Infinity : 0);
 
 const EASE: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 const TYPE_SPEED = 34;
@@ -124,12 +128,13 @@ function Check({ delay }: { delay: number }) {
 }
 
 function Percent({ duration, delay }: { duration: number; delay: number }) {
-  const [v, setV] = useState(0);
+  const value = useMotionValue(0);
+  const label = useTransform(value, (x) => `${Math.round(x)}%`);
   useEffect(() => {
-    const controls = animate(0, 100, { duration, delay, ease: "easeInOut", onUpdate: (x) => setV(Math.round(x)) });
+    const controls = animate(value, 100, { duration, delay, ease: "easeInOut" });
     return () => controls.stop();
-  }, [duration, delay]);
-  return <span style={{ fontVariantNumeric: "tabular-nums" }}>{v}%</span>;
+  }, [value, duration, delay]);
+  return <motion.span style={{ fontVariantNumeric: "tabular-nums" }}>{label}</motion.span>;
 }
 
 /* Esqueleto cinza no modo estrutura, conteúdo real no modo design. */
@@ -141,7 +146,7 @@ function Slot({ wire, delay = 0, w = "100%", h = "0.9em", children, style }: Slo
       <motion.div
         initial={false}
         animate={{ opacity: wire ? 0 : 1, y: wire ? 6 : 0 }}
-        transition={{ duration: 0.5, delay: wire ? 0 : delay, ease: EASE }}
+        transition={{ duration: 0.45, delay: wire ? 0 : delay + 0.2, ease: EASE }}
       >
         {children}
       </motion.div>
@@ -149,7 +154,7 @@ function Slot({ wire, delay = 0, w = "100%", h = "0.9em", children, style }: Slo
         aria-hidden="true"
         initial={false}
         animate={{ opacity: wire ? 1 : 0 }}
-        transition={{ duration: 0.4, delay: wire ? 0 : delay }}
+        transition={{ duration: wire ? 0.4 : 0.2, delay: wire ? 0 : delay }}
         style={{ position: "absolute", left: 0, top: 0, bottom: 0, display: "flex", alignItems: "center", width: w, pointerEvents: "none" }}
       >
         <div style={{ width: "100%", height: h, borderRadius: 4, background: THEME.line }} />
@@ -164,9 +169,14 @@ function Block({ wire, label, delay, children, style }: BlockProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0, borderColor: wire ? "rgba(146,114,241,.55)" : "rgba(146,114,241,0)" }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        borderColor: wire ? "rgba(146,114,241,.4)" : "rgba(146,114,241,0)",
+        backgroundColor: wire ? "rgba(146,114,241,.04)" : "rgba(146,114,241,0)",
+      }}
       transition={{ duration: 0.5, delay, ease: EASE }}
-      style={{ position: "relative", border: "1px dashed", borderRadius: 12, ...style }}
+      style={{ position: "relative", border: "1px solid", borderRadius: 12, ...style }}
     >
       <AnimatePresence>
         {wire && (
@@ -175,7 +185,7 @@ function Block({ wire, label, delay, children, style }: BlockProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ delay: delay + 0.2 }}
-            style={{ position: "absolute", top: "-0.75em", left: "0.7em", fontSize: "0.6em", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: THEME.accent, background: THEME.page, padding: "0 0.5em", zIndex: 1 }}
+            style={{ position: "absolute", top: "-0.85em", left: "0.9em", fontSize: "0.55em", lineHeight: 1, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: THEME.accent, background: "#15111F", border: "1px solid rgba(146,114,241,.4)", borderRadius: 99, padding: "0.4em 0.8em", zIndex: 1 }}
           >
             {label}
           </motion.span>
@@ -195,7 +205,7 @@ function BriefingScene() {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }}
+      exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.5, ease: EASE }}
       style={{ position: "absolute", inset: 0, padding: "1.5em 1.9em", display: "flex", flexDirection: "column", gap: "0.85em" }}
     >
@@ -208,10 +218,10 @@ function BriefingScene() {
         </div>
         <div style={{ height: "0.28em", borderRadius: 99, background: THEME.line, overflow: "hidden", marginTop: "0.5em" }}>
           <motion.div
-            initial={{ width: "4%" }}
-            animate={{ width: "100%" }}
+            initial={{ scaleX: 0.04 }}
+            animate={{ scaleX: 1 }}
             transition={{ duration: 3.8, delay: 0.4, ease: "easeInOut" }}
-            style={{ height: "100%", background: THEME.accent, borderRadius: 99 }}
+            style={{ height: "100%", background: THEME.accent, borderRadius: 99, transformOrigin: "left" }}
           />
         </div>
       </div>
@@ -270,6 +280,7 @@ function BriefingScene() {
 /* ---------- cenas 2 a 4: a landing page sendo construída ---------- */
 
 function CupArt() {
+  const onScreen = useContext(OnScreen);
   return (
     <svg viewBox="0 0 120 100" style={{ width: "62%", height: "auto" }} aria-hidden="true">
       {[0, 1, 2].map((i) => (
@@ -281,7 +292,7 @@ function CupArt() {
           strokeWidth="3"
           strokeLinecap="round"
           animate={{ opacity: [0, 0.9, 0], y: [4, -4, -10] }}
-          transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.5 }}
+          transition={{ duration: 2.4, repeat: loop(onScreen), delay: i * 0.5 }}
         />
       ))}
       <path d="M30 40 h56 v26 a24 24 0 0 1 -24 24 h-8 a24 24 0 0 1 -24 -24 z" fill="#fff" />
@@ -341,7 +352,7 @@ function PageScene({ mode }: { mode: string }) {
       {/* hero */}
       <Block wire={wire} label="Hero" delay={0.12} style={{ padding: "0.9em", display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: "1em", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.55em", minWidth: 0 }}>
-          <Slot wire={wire} h="1.3em" delay={0.1}>
+          <Slot wire={wire} h="1.2em" w="92%" delay={0.1}>
             <div style={{ fontSize: "1.4em", fontWeight: 800, lineHeight: 1.05, color: THEME.ink, letterSpacing: "-0.035em" }}>
               {DEMO.headline[0]}
               <span style={{ color: THEME.accent }}>{DEMO.headline[1]}</span>
@@ -401,8 +412,10 @@ function PageScene({ mode }: { mode: string }) {
             <CupArt />
           </motion.div>
           {wire && (
-            <svg viewBox="0 0 10 10" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
-              <path d="M0 0 L10 10 M10 0 L0 10" stroke={THEME.line} strokeWidth="0.08" />
+            <svg viewBox="0 0 24 24" width="28%" fill="none" stroke="#3A3A3A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" />
             </svg>
           )}
         </div>
@@ -433,7 +446,6 @@ function PageScene({ mode }: { mode: string }) {
           {leads.map((i) => (
             <motion.div
               key={i}
-              layout
               initial={{ opacity: 0, x: 24, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0 }}
@@ -455,7 +467,7 @@ function PageScene({ mode }: { mode: string }) {
 
 /* ---------- etapas (mesmo estilo do stepper do site) ---------- */
 
-function Stepper({ step, fill, onSelect }: { step: number; fill: MotionValue<string>; onSelect: (i: number) => void }) {
+function Stepper({ step, fill, onSelect }: { step: number; fill: MotionValue<number>; onSelect: (i: number) => void }) {
   return (
     <div role="tablist" aria-label="Etapas" style={{ display: "grid", gridTemplateColumns: `repeat(${STEPS.length}, 1fr)`, gap: 8 }}>
       {STEPS.map((s, i) => {
@@ -483,7 +495,7 @@ function Stepper({ step, fill, onSelect }: { step: number; fill: MotionValue<str
             </motion.span>
             <span style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? THEME.ink : THEME.faint, transition: "color .2s", whiteSpace: "nowrap" }}>{s.label}</span>
             <span style={{ width: "70%", height: 2, borderRadius: 99, background: THEME.line, overflow: "hidden" }}>
-              <motion.span style={{ display: "block", height: "100%", background: THEME.accent, width: active ? fill : done ? "100%" : "0%" }} />
+              <motion.span style={{ display: "block", height: "100%", background: THEME.accent, transformOrigin: "left", scaleX: active ? fill : done ? 1 : 0 }} />
             </span>
           </button>
         );
@@ -501,29 +513,32 @@ export default function BriefingAnimation() {
   const inView = useInView(rootRef, { amount: 0.3 });
   const progress = useMotionValue(0);
   const stepRef = useRef(step);
-  const pausedRef = useRef(false);
   stepRef.current = step;
-  pausedRef.current = hover || !inView;
-
-  // relógio: avança as etapas e alimenta as barrinhas
+  const running = inView && !hover;
+  // A primeira cena só começa quando a animação aparece na tela.
+  const [started, setStarted] = useState(false);
   useEffect(() => {
+    if (inView) setStarted(true);
+  }, [inView]);
+
+  // relógio: avança as etapas e alimenta as barrinhas (parado fora da tela ou com o mouse em cima)
+  useEffect(() => {
+    if (!running) return;
     let raf = 0;
     let last = performance.now();
-    const loop = (now: number) => {
+    const tick = (now: number) => {
       const dt = Math.min(now - last, 100);
       last = now;
-      if (!pausedRef.current) {
-        const p = progress.get() + dt / STEPS[stepRef.current].dur;
-        if (p >= 1) {
-          progress.set(0);
-          setStep((s) => (s + 1) % STEPS.length);
-        } else progress.set(p);
-      }
-      raf = requestAnimationFrame(loop);
+      const p = progress.get() + dt / STEPS[stepRef.current].dur;
+      if (p >= 1) {
+        progress.set(0);
+        setStep((s) => (s + 1) % STEPS.length);
+      } else progress.set(p);
+      raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(loop);
+    raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [progress]);
+  }, [running, progress]);
 
   const goTo = (i: number) => {
     progress.set(0);
@@ -535,8 +550,8 @@ export default function BriefingAnimation() {
   const my = useMotionValue(0);
   const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [6, -6]), { stiffness: 150, damping: 18 });
   const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 150, damping: 18 });
-  const glare = useTransform(mx, (x) => `radial-gradient(circle at ${50 + x * 70}% 0%, rgba(146,114,241,.22), rgba(146,114,241,0) 60%)`);
-  const fill = useTransform(progress, (v) => `${v * 100}%`);
+  const glareX = useTransform(mx, [-0.5, 0.5], ["-35%", "35%"]);
+  const fill = progress;
 
   const onMove = (e: MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -555,101 +570,106 @@ export default function BriefingAnimation() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div ref={rootRef} style={{ position: "relative", width: "100%", maxWidth: 680, marginInline: "auto", fontFamily: "inherit", color: THEME.ink }}>
-        {/* brilho roxo atrás da janela */}
-        <motion.div
-          aria-hidden="true"
-          animate={{ opacity: [0.55, 0.85, 0.55], scale: [1, 1.05, 1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", left: "8%", right: "8%", top: "6%", height: "70%", background: "radial-gradient(closest-side, rgba(146,114,241,.38), rgba(146,114,241,0))", filter: "blur(30px)", pointerEvents: "none" }}
-        />
-
-        <div onMouseMove={onMove} onMouseEnter={() => setHover(true)} onMouseLeave={onLeave} style={{ perspective: 1200, position: "relative" }}>
+      <OnScreen.Provider value={inView}>
+        <div ref={rootRef} style={{ position: "relative", width: "100%", maxWidth: 680, marginInline: "auto", fontFamily: "inherit", color: THEME.ink }}>
+          {/* brilho roxo atrás da janela */}
           <motion.div
-            style={{
-              rotateX,
-              rotateY,
-              transformStyle: "preserve-3d",
-              position: "relative",
-              borderRadius: 24,
-              background: THEME.card,
-              border: `1px solid ${THEME.line}`,
-              boxShadow: "0 3rem 5rem -2.5rem rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.02) inset",
-              overflow: "hidden",
-              containerType: "inline-size",
-            }}
-          >
-            {/* barra do navegador */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${THEME.line}` }}>
-              <div style={{ display: "flex", gap: 6 }}>
-                {[0, 1, 2].map((i) => (
-                  <span key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#333" }} />
-                ))}
-              </div>
-              <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, background: "#0F0F10", border: `1px solid ${THEME.line}`, borderRadius: 99, padding: "5px 14px", fontSize: 12, color: THEME.muted }}>
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={url}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25 }}
-                    style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                  >
-                    {url}
-                  </motion.span>
-                </AnimatePresence>
-                <AnimatePresence>
-                  {current.id === "no-ar" && (
-                    <motion.span
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      style={{ display: "flex", alignItems: "center", gap: 6, color: THEME.success, fontWeight: 700, fontSize: 11, whiteSpace: "nowrap" }}
-                    >
-                      <motion.span
-                        animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
-                        transition={{ duration: 1.6, repeat: Infinity }}
-                        style={{ width: 7, height: 7, borderRadius: "50%", background: THEME.success }}
-                      />
-                      Publicado
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+            aria-hidden="true"
+            animate={{ opacity: inView ? [0.6, 1, 0.6] : 0.8 }}
+            transition={{ duration: 6, repeat: loop(inView), ease: "easeInOut" }}
+            style={{ position: "absolute", left: "0%", right: "0%", top: "-4%", height: "90%", background: "radial-gradient(closest-side, rgba(146,114,241,.3), rgba(146,114,241,.12) 55%, rgba(146,114,241,0))", pointerEvents: "none", willChange: "opacity" }}
+          />
 
-            {/* área da página */}
-            <div style={{ position: "relative", aspectRatio: "16 / 11", fontSize: "clamp(8px, 2.5cqw, 16px)", overflow: "hidden", background: isForm ? THEME.card : THEME.page, transition: "background .5s" }}>
-              <AnimatePresence mode="wait">
-                {isForm ? <BriefingScene key="briefing" /> : <PageScene key="page" mode={current.id} />}
-              </AnimatePresence>
-            </div>
-
-            {/* reflexo roxo seguindo o mouse */}
-            <motion.div aria-hidden="true" style={{ position: "absolute", inset: 0, background: glare, opacity: hover ? 1 : 0, pointerEvents: "none", transition: "opacity .3s" }} />
-          </motion.div>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 26 }}>
-          <Stepper step={step} fill={fill} onSelect={goTo} />
-        </div>
-
-        <div style={{ position: "relative", minHeight: 28, marginTop: 16, textAlign: "center" }}>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={current.id}
-              initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
-              transition={{ duration: 0.35 }}
-              style={{ margin: 0, fontSize: 18, fontWeight: 300, letterSpacing: "-0.01em", background: THEME.gradient, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}
+          <div onMouseMove={onMove} onMouseEnter={() => setHover(true)} onMouseLeave={onLeave} style={{ perspective: 1200, position: "relative" }}>
+            <motion.div
+              style={{
+                rotateX,
+                rotateY,
+                willChange: "transform",
+                position: "relative",
+                borderRadius: 24,
+                background: THEME.card,
+                border: `1px solid ${THEME.line}`,
+                boxShadow: "0 3rem 5rem -2.5rem rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.02) inset",
+                overflow: "hidden",
+                containerType: "inline-size",
+              }}
             >
-              {current.caption}
-            </motion.p>
-          </AnimatePresence>
+              {/* barra do navegador */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${THEME.line}` }}>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#333" }} />
+                  ))}
+                </div>
+                <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, background: "#0F0F10", border: `1px solid ${THEME.line}`, borderRadius: 99, padding: "5px 14px", fontSize: 12, color: THEME.muted }}>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={url}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.25 }}
+                      style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    >
+                      {url}
+                    </motion.span>
+                  </AnimatePresence>
+                  <AnimatePresence>
+                    {current.id === "no-ar" && (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        style={{ display: "flex", alignItems: "center", gap: 6, color: THEME.success, fontWeight: 700, fontSize: 11, whiteSpace: "nowrap" }}
+                      >
+                        <motion.span
+                          animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+                          transition={{ duration: 1.6, repeat: loop(inView) }}
+                          style={{ width: 7, height: 7, borderRadius: "50%", background: THEME.success }}
+                        />
+                        Publicado
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* área da página */}
+              <div style={{ position: "relative", aspectRatio: "16 / 11", fontSize: "clamp(8px, 2.5cqw, 16px)", overflow: "hidden", background: isForm ? THEME.card : THEME.page, transition: "background .5s" }}>
+                <AnimatePresence mode="wait">
+                  {started && (isForm ? <BriefingScene key="briefing" /> : <PageScene key="page" mode={current.id} />)}
+                </AnimatePresence>
+              </div>
+
+              {/* reflexo roxo seguindo o mouse */}
+              <motion.div
+                aria-hidden="true"
+                style={{ position: "absolute", top: 0, bottom: 0, left: "-25%", width: "150%", x: glareX, background: "radial-gradient(circle at 50% 0%, rgba(146,114,241,.22), rgba(146,114,241,0) 45%)", opacity: hover ? 1 : 0, pointerEvents: "none", transition: "opacity .3s", willChange: "transform" }}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: "relative", marginTop: 26 }}>
+            <Stepper step={step} fill={fill} onSelect={goTo} />
+          </div>
+
+          <div style={{ position: "relative", minHeight: 28, marginTop: 16, textAlign: "center" }}>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={current.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.35 }}
+                style={{ margin: 0, fontSize: 18, fontWeight: 300, letterSpacing: "-0.01em", background: THEME.gradient, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}
+              >
+                {current.caption}
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      </OnScreen.Provider>
     </MotionConfig>
   );
 }
