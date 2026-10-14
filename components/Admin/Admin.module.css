@@ -1,0 +1,478 @@
+/* Painel administrativo — mesma identidade escura do formulário. */
+.shell {
+  min-height: 100vh;
+  background: #000;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+.muted {
+  margin: 0;
+  color: #8f8f8f;
+  font-size: 0.9rem;
+}
+.purple {
+  color: #9272f1;
+}
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #9272f1;
+}
+.link {
+  color: #c9bcf8;
+  word-break: break-all;
+}
+.link:hover {
+  color: #fff;
+}
+
+/* Login */
+.loginPage {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: radial-gradient(ellipse at top, #2f2447 0%, #000 60%);
+}
+.loginCard {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 32px;
+  text-align: center;
+  background: #111;
+  border: 1px solid #262626;
+  border-radius: 20px;
+}
+.loginLogo {
+  width: 150px;
+  height: auto;
+  margin-bottom: 24px;
+}
+.loginTitle {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+  text-align: left;
+}
+.loginForm button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Cabeçalho */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: #000000e6;
+  border-bottom: 1px solid #1f1f1f;
+  backdrop-filter: blur(8px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.headerLogo {
+  width: 110px;
+  height: auto;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.navLink,
+.navButton {
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid #ffffff26;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.navLink:hover,
+.navButton:hover {
+  color: #fff;
+  background: #ffffff0f;
+}
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 16px;
+  }
+  .brand span {
+    display: none;
+  }
+}
+
+/* Cartões e números */
+.card {
+  min-width: 0;
+  padding: 24px;
+  background: #111;
+  border: 1px solid #262626;
+  border-radius: 16px;
+}
+.cardTitle {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.sectionTitle {
+  margin: 20px 0 16px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.tile {
+  padding: 20px 24px;
+  background: #111;
+  border: 1px solid #262626;
+  border-radius: 16px;
+}
+.tileLabel {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #a8a8a8;
+}
+.heroValue {
+  margin: 6px 0 0;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.tileValue {
+  margin: 6px 0 0;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+@media (max-width: 700px) {
+  .tiles {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tiles .tile:first-child {
+    grid-column: 1 / -1;
+  }
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 16px;
+}
+
+/* Gráfico semanal */
+.chartScroll {
+  margin-top: 16px;
+  padding-top: 48px;
+  margin-inline: -8px;
+  padding-inline: 8px;
+  overflow-x: auto;
+}
+.chartWrap {
+  position: relative;
+  min-width: 520px;
+}
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.gridLine {
+  stroke: #262626;
+  stroke-width: 1;
+}
+.axisText {
+  fill: #8f8f8f;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.valueText {
+  fill: #e0e0e0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.barGroup {
+  cursor: default;
+  outline: none;
+}
+.bar {
+  fill: #9272f1;
+  transition: fill 0.15s;
+}
+.barActive {
+  fill: #b19cf6;
+}
+.barGroup:focus-visible .bar {
+  fill: #b19cf6;
+}
+.tooltip {
+  position: absolute;
+  top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #a8a8a8;
+  white-space: nowrap;
+  pointer-events: none;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  transform: translate(-50%, -100%);
+}
+.tooltip strong {
+  font-size: 0.95rem;
+  color: #fff;
+}
+.tableToggle {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #8f8f8f;
+}
+.tableToggle summary {
+  cursor: pointer;
+}
+.dataTable {
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.dataTable th,
+.dataTable td {
+  padding: 4px 16px 4px 0;
+  text-align: left;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+/* Barras horizontais das perguntas */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.barRow {
+  padding: 4px 6px;
+  margin: 0 -6px;
+  border-radius: 8px;
+  outline: none;
+}
+.barRow:hover,
+.barRow:focus-visible {
+  background: #ffffff08;
+}
+.barRow:hover .barFill,
+.barRow:focus-visible .barFill {
+  background: #b19cf6;
+}
+.barRowHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+.barLabel {
+  color: #d6d6d6;
+}
+.barValue {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.barTrack {
+  height: 10px;
+  background: #1c1c1c;
+  border-radius: 0 4px 4px 0;
+}
+.barFill {
+  height: 100%;
+  background: #9272f1;
+  border-radius: 0 4px 4px 0;
+  transition: background 0.15s;
+}
+
+/* Lista de clientes */
+.search {
+  margin: 16px 0;
+}
+.empty {
+  margin: 0;
+  padding: 24px 0 8px;
+  color: #8f8f8f;
+  text-align: center;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #1f1f1f;
+}
+.listItem {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 12px;
+  margin: 0 -12px;
+  color: #e0e0e0;
+  text-decoration: none;
+  border-bottom: 1px solid #1f1f1f;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.listItem:hover,
+.listItem:focus-visible {
+  background: #9272f114;
+}
+.listMain,
+.listContact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.listMain strong {
+  color: #fff;
+}
+.listContact {
+  font-size: 0.9rem;
+}
+.listDate {
+  font-size: 0.85rem;
+  color: #8f8f8f;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .listItem {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+/* Página do cliente */
+.back {
+  align-self: flex-start;
+  font-size: 0.9rem;
+  color: #c9bcf8;
+  text-decoration: none;
+}
+.back:hover {
+  color: #fff;
+}
+.detailTitle {
+  margin: 0 0 4px;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.pill {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: #c9bcf8;
+  text-decoration: none;
+  background: #9272f114;
+  border: 1px solid #9272f14d;
+  border-radius: 999px;
+  overflow-wrap: anywhere;
+}
+.pill:hover {
+  color: #fff;
+  border-color: #9272f1;
+}
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 16px 0 0;
+}
+.answer dt {
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: #8f8f8f;
+}
+.answer dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #f0f0f0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.footerActions {
+  display: flex;
+  justify-content: flex-end;
+}
+.dangerButton {
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: #f58a90;
+  background: transparent;
+  border: 1px solid #f0717866;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.dangerButton:hover {
+  color: #fff;
+  background: #f0717826;
+}

@@ -8,9 +8,10 @@ type ButtonProps = {
   type?: "button" | "submit";
   variant?: "primary" | "ghost";
   isLoading?: boolean;
+  loadingText?: string;
 };
 
-export default function Button({ children, href, onClick, type = "button", variant = "primary", isLoading = false }: ButtonProps) {
+export default function Button({ children, href, onClick, type = "button", variant = "primary", isLoading = false, loadingText = "Enviando..." }: ButtonProps) {
   const className = `${styles.button} ${variant === "ghost" ? styles.ghost : ""} ${isLoading ? styles.loading : ""}`;
 
   if (href) {
@@ -23,7 +24,7 @@ export default function Button({ children, href, onClick, type = "button", varia
 
   return (
     <button type={type} onClick={onClick} className={className} disabled={isLoading}>
-      <span>{isLoading ? "Enviando..." : children}</span>
+      <span>{isLoading ? loadingText : children}</span>
     </button>
   );
 }

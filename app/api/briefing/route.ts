@@ -10,7 +10,9 @@ import {
   validateField,
   type Answers,
 } from "@/lib/questions";
+import { saveBriefing } from "@/lib/briefings";
 import { buildSections, buildText } from "@/lib/summary";
+import { getSupabase } from "@/lib/supabase";
 
 const MAX_TEXT = 5000;
 
@@ -107,9 +109,26 @@ export async function POST(request: Request) {
   if (invalid) return fail(`O arquivo "${invalid.name}" não é de um formato aceito.`);
 
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, BRIEFING_TO, SEND_CLIENT_COPY } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.error("Variáveis SMTP não configuradas.");
-    return fail("O envio por e-mail não está configurado.", 500);
+  const hasEmail = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
+  const hasDatabase = Boolean(getSupabase());
+  if (!hasEmail && !hasDatabase) {
+    console.error("Nem SMTP nem Supabase estão configurados.");
+    return fail("O envio do briefing não está configurado.", 500);
+  }
+
+  // As respostas vão para o painel (Supabase) e para o e-mail. Basta um dos dois dar certo.
+  let saved = false;
+  if (hasDatabase) {
+    try {
+      await saveBriefing(answers, files);
+      saved = true;
+    } catch (error) {
+      console.error("Erro ao salvar o briefing no Supabase:", error);
+    }
+  }
+
+  if (!hasEmail) {
+    return saved ? Response.json({ message: "Briefing enviado." }) : fail("Não conseguimos enviar o briefing agora.", 502);
   }
 
   const port = Number(SMTP_PORT) || 465;
@@ -139,7 +158,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Erro ao enviar e-mail:", error);
-    return fail("Não conseguimos enviar o briefing agora.", 502);
+    if (!saved) return fail("Não conseguimos enviar o briefing agora.", 502);
   }
 
   if (SEND_CLIENT_COPY === "true") {
