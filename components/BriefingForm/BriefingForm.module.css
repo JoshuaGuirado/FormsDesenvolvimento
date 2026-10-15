@@ -35,7 +35,7 @@
 }
 .stepList {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(var(--steps, 9), 1fr);
   gap: 6px;
   margin: 18px 0 0;
   padding: 0;

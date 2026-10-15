@@ -486,3 +486,43 @@
   color: #fff;
   background: #f0717826;
 }
+
+/* Abas dos formulários */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  color: #a8a8a8;
+  text-decoration: none;
+  background: #111;
+  border: 1px solid #262626;
+  border-radius: 999px;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.tab:hover {
+  color: #fff;
+  border-color: #9272f180;
+}
+.tabActive {
+  color: #fff;
+  background: #9272f133;
+  border-color: #9272f1;
+}
+.tabCount {
+  min-width: 24px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #c9bcf8;
+  background: #9272f126;
+  border-radius: 999px;
+}

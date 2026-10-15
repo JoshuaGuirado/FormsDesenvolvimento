@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import {
   ACCEPTED_EXTENSIONS,
   MAX_REFERENCES,
@@ -22,6 +22,18 @@ type FormFieldProps = {
   onChange: (name: string, value: Answers[string]) => void;
   onFilesChange: (files: File[]) => void;
 };
+
+/** Deixa os links do texto de ajuda clicáveis (ex.: o link do teste DISC). */
+const linkify = (text: string): ReactNode[] =>
+  text.split(/(https?:\/\/[^\s,]+)/g).map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className={styles.helpLink}>
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
 
 const formatBytes = (bytes: number) =>
   bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -49,7 +61,7 @@ export default function FormField({ field, answers, error, files, onChange, onFi
       case "checkbox":
         return <Choices field={field} answers={answers} onChange={onChange} />;
       case "files":
-        return <FileDrop files={files} onFilesChange={onFilesChange} />;
+        return <FileDrop accept={field.accept ?? ACCEPTED_EXTENSIONS} files={files} onFilesChange={onFilesChange} />;
       case "references":
         return <References value={(value as Reference[]) ?? []} onChange={(refs) => onChange(field.name, refs)} />;
       default:
@@ -57,8 +69,11 @@ export default function FormField({ field, answers, error, files, onChange, onFi
           <input
             id={id}
             className={styles.input}
-            type={field.type === "url" ? "text" : field.type}
-            inputMode={field.type === "url" ? "url" : field.type === "tel" ? "tel" : undefined}
+            type={field.type === "email" || field.type === "tel" ? field.type : "text"}
+            inputMode={
+              field.type === "url" ? "url" : field.type === "tel" ? "tel" : field.type === "number" || field.type === "cpf" ? "numeric" : undefined
+            }
+            maxLength={field.type === "number" ? 3 : field.type === "cpf" ? 14 : undefined}
             autoComplete={field.name === "nome" ? "name" : field.type === "email" ? "email" : field.type === "tel" ? "tel" : "off"}
             placeholder={field.placeholder}
             value={text}
@@ -79,7 +94,7 @@ export default function FormField({ field, answers, error, files, onChange, onFi
         {field.label}
         {field.required && <span className={styles.required}> *</span>}
       </Label>
-      {help && <p className={styles.help}>{help}</p>}
+      {help && <p className={styles.help}>{linkify(help)}</p>}
       {control}
       {error && <p className={styles.error}>{error}</p>}
     </div>
@@ -132,19 +147,19 @@ function Choices({ field, answers, onChange }: Pick<FormFieldProps, "field" | "a
   );
 }
 
-function FileDrop({ files, onFilesChange }: Pick<FormFieldProps, "files" | "onFilesChange">) {
+function FileDrop({ accept, files, onFilesChange }: { accept: string[] } & Pick<FormFieldProps, "files" | "onFilesChange">) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [warning, setWarning] = useState("");
   const total = files.reduce((sum, file) => sum + file.size, 0);
 
   const add = (incoming: File[]) => {
-    const accepted = incoming.filter((file) => ACCEPTED_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext)));
+    const accepted = incoming.filter((file) => accept.some((ext) => file.name.toLowerCase().endsWith(ext)));
     const next = [...files, ...accepted.filter((file) => !files.some((f) => f.name === file.name && f.size === file.size))];
     const nextTotal = next.reduce((sum, file) => sum + file.size, 0);
 
     if (nextTotal > MAX_UPLOAD_BYTES) {
-      setWarning("Os arquivos passam de 4 MB. Envie os maiores pelo link do Drive, logo abaixo.");
+      setWarning("Os arquivos passam de 4 MB. Envie os maiores por link, no campo logo abaixo.");
       return;
     }
     setWarning(accepted.length < incoming.length ? "Alguns arquivos foram ignorados por não estarem em um formato aceito." : "");
@@ -184,7 +199,7 @@ function FileDrop({ files, onFilesChange }: Pick<FormFieldProps, "files" | "onFi
           ref={inputRef}
           type="file"
           multiple
-          accept={ACCEPTED_EXTENSIONS.join(",")}
+          accept={accept.join(",")}
           hidden
           onChange={(e) => {
             add(Array.from(e.target.files ?? []));

@@ -20,7 +20,17 @@
 .help {
   margin: -4px 0 0;
   font-size: 0.85rem;
+  line-height: 1.5;
   color: #8f8f8f;
+  overflow-wrap: anywhere;
+}
+.helpLink {
+  color: #c9bcf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.helpLink:hover {
+  color: #fff;
 }
 .input,
 .textarea {

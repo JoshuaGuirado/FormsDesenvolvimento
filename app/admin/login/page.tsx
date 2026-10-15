@@ -10,7 +10,7 @@ export default async function LoginPage() {
     <main className={styles.loginPage}>
       <div className={styles.loginCard}>
         <img src="/images/logo-linka.png" alt="Linka Mídia" className={styles.loginLogo} />
-        <h1 className={styles.loginTitle}>Painel de briefings</h1>
+        <h1 className={styles.loginTitle}>Painel de formulários</h1>
         <p className={styles.muted}>Acesso restrito à equipe da Linka.</p>
         <LoginForm />
       </div>

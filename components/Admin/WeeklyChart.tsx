@@ -9,10 +9,11 @@ const HEIGHT = 200;
 const PAD = { top: 20, right: 8, bottom: 28, left: 28 };
 const BAR = 24;
 
-const plural = (n: number) => `${n} briefing${n === 1 ? "" : "s"}`;
+type WeeklyChartProps = { weeks: WeekCount[]; noun: string; nounPlural: string };
 
-/** Briefings recebidos por semana (colunas). */
-export default function WeeklyChart({ weeks }: { weeks: WeekCount[] }) {
+/** Respostas recebidas por semana (colunas). */
+export default function WeeklyChart({ weeks, noun, nounPlural }: WeeklyChartProps) {
+  const plural = (n: number) => `${n} ${n === 1 ? noun : nounPlural}`;
   const [active, setActive] = useState<number | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   // No celular o gráfico rola na horizontal: começa mostrando as semanas mais recentes.
@@ -41,7 +42,7 @@ export default function WeeklyChart({ weeks }: { weeks: WeekCount[] }) {
     <div>
       <div className={styles.chartScroll} ref={scroller}>
         <div className={styles.chartWrap}>
-          <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className={styles.chart} role="img" aria-label="Briefings por semana">
+          <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className={styles.chart} role="img" aria-label={`${nounPlural} por semana`}>
             {ticks.map((tick) => (
               <g key={tick}>
                 <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} className={styles.gridLine} />
@@ -104,7 +105,7 @@ export default function WeeklyChart({ weeks }: { weeks: WeekCount[] }) {
           <thead>
             <tr>
               <th>Semana de</th>
-              <th>Briefings</th>
+              <th>{nounPlural.charAt(0).toUpperCase() + nounPlural.slice(1)}</th>
             </tr>
           </thead>
           <tbody>

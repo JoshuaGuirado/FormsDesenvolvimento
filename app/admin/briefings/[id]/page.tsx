@@ -6,6 +6,7 @@ import DeleteButton from "@/components/Admin/DeleteButton";
 import styles from "@/components/Admin/Admin.module.css";
 import { requireAdmin } from "@/lib/auth";
 import { fileLinks, getBriefing } from "@/lib/briefings";
+import { FORMS } from "@/lib/forms";
 import { buildSections } from "@/lib/summary";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,11 @@ export default async function BriefingPage({ params }: { params: Promise<{ id: s
   const briefing = await getBriefing(id);
   if (!briefing) notFound();
 
-  const sections = buildSections(briefing.answers);
+  const form = FORMS[briefing.formulario];
+  const female = briefing.formulario === "seletivo";
+  const title = form.title(briefing);
+  const subtitle = form.subtitle(briefing);
+  const sections = buildSections(form.steps, briefing.answers);
   const files = await fileLinks(briefing.arquivos).catch((error) => {
     console.error("Erro ao gerar links dos arquivos:", error);
     return briefing.arquivos.map((file) => ({ ...file, url: null }));
@@ -49,14 +54,16 @@ export default async function BriefingPage({ params }: { params: Promise<{ id: s
     <>
       <AdminHeader />
       <main className={styles.main}>
-        <Link href="/admin" className={styles.back}>
+        <Link href={`/admin?form=${form.id}`} className={styles.back}>
           ← Voltar para o painel
         </Link>
 
         <section className={styles.card}>
-          <p className={styles.eyebrow}>Briefing recebido em {date}</p>
-          <h1 className={styles.detailTitle}>{briefing.empresa}</h1>
-          <p className={styles.muted}>{briefing.nome}</p>
+          <p className={styles.eyebrow}>
+            {form.noun} {female ? "recebida" : "recebido"} em {date}
+          </p>
+          <h1 className={styles.detailTitle}>{title}</h1>
+          {subtitle && <p className={styles.muted}>{subtitle}</p>}
           <div className={styles.actions}>
             <a href={`mailto:${briefing.email}`} className={styles.pill}>
               {briefing.email}
@@ -86,7 +93,7 @@ export default async function BriefingPage({ params }: { params: Promise<{ id: s
         <section className={styles.card}>
           <h2 className={styles.cardTitle}>Arquivos enviados</h2>
           {files.length === 0 ? (
-            <p className={styles.muted}>O cliente não anexou arquivos.</p>
+            <p className={styles.muted}>O {form.person} não anexou arquivos.</p>
           ) : (
             <ul className={styles.files}>
               {files.map((file) => (
@@ -106,7 +113,12 @@ export default async function BriefingPage({ params }: { params: Promise<{ id: s
         </section>
 
         <div className={styles.footerActions}>
-          <DeleteButton id={briefing.id} empresa={briefing.empresa} />
+          <DeleteButton
+            id={briefing.id}
+            form={form.id}
+            label={`Excluir ${form.noun}`}
+            confirmText={`Excluir ${female ? "a" : "o"} ${form.noun} de ${title}? As respostas e os arquivos serão apagados de vez.`}
+          />
         </div>
       </main>
     </>

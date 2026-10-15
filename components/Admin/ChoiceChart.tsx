@@ -1,8 +1,10 @@
 import type { ChoiceStat } from "@/lib/stats";
 import styles from "./Admin.module.css";
 
-/** Quantos clientes marcaram cada opção de uma pergunta (barras horizontais). */
-export default function ChoiceChart({ stat }: { stat: ChoiceStat }) {
+type ChoiceChartProps = { stat: ChoiceStat; person: string; personPlural: string };
+
+/** Quantas pessoas marcaram cada opção de uma pergunta (barras horizontais). */
+export default function ChoiceChart({ stat, person, personPlural }: ChoiceChartProps) {
   const max = Math.max(1, ...stat.options.map((item) => item.count));
 
   return (
@@ -10,7 +12,7 @@ export default function ChoiceChart({ stat }: { stat: ChoiceStat }) {
       <p className={styles.eyebrow}>{stat.section}</p>
       <h3 className={styles.cardTitle}>{stat.label}</h3>
       <p className={styles.muted}>
-        {stat.answered} {stat.answered === 1 ? "cliente respondeu" : "clientes responderam"}
+        {stat.answered} {stat.answered === 1 ? `${person} respondeu` : `${personPlural} responderam`}
       </p>
       <ul className={styles.barList}>
         {stat.options.map((item) => {

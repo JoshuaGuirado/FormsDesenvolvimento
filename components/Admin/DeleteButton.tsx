@@ -3,19 +3,22 @@
 import { removeBriefing } from "@/app/admin/actions";
 import styles from "./Admin.module.css";
 
-export default function DeleteButton({ id, empresa }: { id: string; empresa: string }) {
+type DeleteButtonProps = { id: string; form: string; label: string; confirmText: string };
+
+export default function DeleteButton({ id, form, label, confirmText }: DeleteButtonProps) {
   return (
     <form
       action={removeBriefing}
       onSubmit={(event) => {
-        if (!confirm(`Excluir o briefing de ${empresa}? As respostas e os arquivos serão apagados de vez.`)) {
+        if (!confirm(confirmText)) {
           event.preventDefault();
         }
       }}
     >
       <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="form" value={form} />
       <button type="submit" className={styles.dangerButton}>
-        Excluir briefing
+        {label}
       </button>
     </form>
   );

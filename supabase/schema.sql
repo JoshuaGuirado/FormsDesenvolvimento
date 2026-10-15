@@ -1,12 +1,15 @@
--- Banco do briefing da Linka Mídia.
+-- Banco dos formulários da Linka Mídia (briefing de landing page e processo seletivo).
 -- Rode este arquivo inteiro uma vez no Supabase: SQL Editor → New query → cole → Run.
 -- Pode rodar de novo sem problema: nada é apagado.
 
--- Respostas do formulário (uma linha por cliente/briefing)
+-- Respostas dos formulários (uma linha por envio)
 create table if not exists public.briefings (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  empresa text not null,
+  -- 'briefing' (landing page) ou 'seletivo' (processo seletivo)
+  formulario text not null default 'briefing',
+  -- Só o briefing tem empresa; no processo seletivo fica vazio
+  empresa text,
   nome text not null,
   email text not null,
   whatsapp text,
@@ -15,6 +18,11 @@ create table if not exists public.briefings (
   arquivos jsonb not null default '[]'::jsonb
 );
 create index if not exists briefings_created_at_idx on public.briefings (created_at desc);
+
+-- Atualiza bancos criados antes do processo seletivo (as respostas antigas viram 'briefing')
+alter table public.briefings add column if not exists formulario text not null default 'briefing';
+alter table public.briefings alter column empresa drop not null;
+create index if not exists briefings_formulario_idx on public.briefings (formulario, created_at desc);
 
 -- Usado pelo agendamento que mantém o projeto ativo (o plano grátis pausa após 7 dias parado)
 create table if not exists public.keepalive (

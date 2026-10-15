@@ -1,3 +1,4 @@
+import logo from "@/public/images/logo-linka.png";
 import styles from "./Footer.module.css";
 
 const iconProps = {
@@ -17,7 +18,7 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        <img src="/images/logo-linka.png" alt="Linka Mídia" className={styles.logo} />
+        <img src={logo.src} alt="Linka Mídia" className={styles.logo} />
 
         <div className={styles.links}>
           <a href="mailto:contato@linkamidia.com.br" className={styles.item}>

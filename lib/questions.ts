@@ -1,12 +1,15 @@
-// Todas as perguntas do briefing ficam aqui. Para incluir, remover ou
-// reordenar perguntas, edite apenas este arquivo: o formulário e o e-mail
-// são montados a partir dele.
+// Perguntas do briefing de landing page. Para incluir, remover ou reordenar
+// perguntas, edite apenas este arquivo: o formulário, a revisão, o e-mail e o
+// painel são montados a partir dele. As do processo seletivo ficam em
+// questions-seletivo.ts, e os textos de cada formulário em forms.ts.
 
 export type FieldType =
   | "text"
   | "email"
   | "tel"
   | "url"
+  | "number"
+  | "cpf"
   | "textarea"
   | "radio"
   | "checkbox"
@@ -29,6 +32,8 @@ export type Field = {
   half?: boolean;
   /** Só aparece quando outro campo tem um destes valores. */
   showIf?: { field: string; values: string[] };
+  /** Extensões aceitas no campo de arquivos (padrão: ACCEPTED_EXTENSIONS). */
+  accept?: string[];
 };
 
 export type Step = {
@@ -39,7 +44,7 @@ export type Step = {
   fields: Field[];
 };
 
-export const steps: Step[] = [
+export const briefingSteps: Step[] = [
   {
     id: "cliente",
     title: "Informações do",
@@ -345,9 +350,25 @@ export function isFilled(value: Answers[string] | undefined) {
   return typeof value[0] === "string" || (value as Reference[]).some((ref) => ref.url.trim() !== "");
 }
 
-/** Mensagem de erro do campo, ou null se estiver válido. Usado no navegador e no servidor. */
-export function validateField(field: Field, answers: Answers): string | null {
-  if (!isVisible(field, answers) || field.type === "files") return null;
+/** CPF com os dígitos verificadores corretos. */
+function isValidCpf(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length !== 11 || /^(\d)\1+$/.test(digits)) return false;
+  const check = (length: number) => {
+    let sum = 0;
+    for (let i = 0; i < length; i++) sum += Number(digits[i]) * (length + 1 - i);
+    return ((sum * 10) % 11) % 10;
+  };
+  return check(9) === Number(digits[9]) && check(10) === Number(digits[10]);
+}
+
+/**
+ * Mensagem de erro do campo, ou null se estiver válido. Usado no navegador e no servidor.
+ * Os arquivos não ficam nas respostas: `fileCount` diz quantos foram anexados.
+ */
+export function validateField(field: Field, answers: Answers, fileCount = 0): string | null {
+  if (!isVisible(field, answers)) return null;
+  if (field.type === "files") return field.required && fileCount === 0 ? "Anexe pelo menos um arquivo." : null;
   const value = answers[field.name];
 
   if (field.required && !isFilled(value)) {
@@ -363,6 +384,12 @@ export function validateField(field: Field, answers: Answers): string | null {
   }
   if (field.type === "tel" && value.replace(/\D/g, "").length < 10) {
     return "Informe o número com DDD.";
+  }
+  if (field.type === "number" && !/^\d{1,3}$/.test(value.trim())) {
+    return "Informe só o número.";
+  }
+  if (field.type === "cpf" && !isValidCpf(value)) {
+    return "Informe um CPF válido.";
   }
   return null;
 }

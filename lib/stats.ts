@@ -1,6 +1,6 @@
 // Números do relatório do painel, calculados a partir dos briefings salvos.
 import type { Briefing } from "./briefings";
-import { isVisible, OTHER, selectedOptions, steps } from "./questions";
+import { isVisible, OTHER, selectedOptions, type Step } from "./questions";
 
 const DAY = 24 * 60 * 60 * 1000;
 const WEEKS = 12;
@@ -19,7 +19,7 @@ function weekStart(date: Date) {
   return day;
 }
 
-export function buildStats(briefings: Briefing[]) {
+export function buildStats(briefings: Briefing[], steps: Step[]) {
   const now = Date.now();
   const since = (days: number) => briefings.filter((b) => now - new Date(b.created_at).getTime() <= days * DAY).length;
 

@@ -1,22 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
-import { isVisible, steps, validateField, type Answers } from "@/lib/questions";
+import { FORMS, type FormId } from "@/lib/forms";
+import { isVisible, validateField, type Answers, type Step } from "@/lib/questions";
 import { buildSections, buildText } from "@/lib/summary";
 import styles from "./BriefingForm.module.css";
 
-const DRAFT_KEY = "linka-briefing-rascunho";
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5544998019947";
-const REVIEW = steps.length;
 
 type Status = "idle" | "sending" | "success" | "error";
 type Draft = { answers: Answers; step: number; visited: number };
 
 const whatsappLink = (text: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 
-export default function BriefingForm() {
+/** Formulário em etapas, com revisão no final. Serve para o briefing e para o processo seletivo. */
+export default function BriefingForm({ formId }: { formId: FormId }) {
+  const form = FORMS[formId];
+  const { steps, draftKey: DRAFT_KEY } = form;
+  const REVIEW = steps.length;
   const [answers, setAnswers] = useState<Answers>({});
   const [files, setFiles] = useState<File[]>([]);
   const [step, setStep] = useState(0);
@@ -38,14 +41,14 @@ export default function BriefingForm() {
       }
     } catch {}
     setLoaded(true);
-  }, []);
+  }, [DRAFT_KEY, REVIEW]);
 
   useEffect(() => {
     if (!loaded || status === "success") return;
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, step, visited } satisfies Draft));
     } catch {}
-  }, [answers, step, visited, loaded, status]);
+  }, [answers, step, visited, loaded, status, DRAFT_KEY]);
 
   const goTo = (target: number) => {
     setStep(target);
@@ -61,10 +64,16 @@ export default function BriefingForm() {
     setErrors(({ [fieldName]: _, ...rest }) => rest);
   };
 
+  const updateFiles = (next: File[]) => {
+    setFiles(next);
+    const names = steps.flatMap((s) => s.fields).filter((f) => f.type === "files").map((f) => f.name);
+    setErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([name]) => !names.includes(name))));
+  };
+
   const validateStep = (index: number) => {
     const found: Record<string, string> = {};
     for (const field of steps[index].fields) {
-      const error = validateField(field, answers);
+      const error = validateField(field, answers, files.length);
       if (error) found[field.name] = error;
     }
     return found;
@@ -99,9 +108,10 @@ export default function BriefingForm() {
     files.forEach((file) => body.append("arquivos", file));
 
     try {
-      const response = await fetch("/api/briefing", { method: "POST", body });
+      // Endereço relativo ao formulário, para funcionar também em www.linkamidia.com.br/formsbriefing.
+      const response = await fetch(`${form.path}/enviar`, { method: "POST", body });
       const result = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(result?.message || "Não conseguimos enviar o briefing agora.");
+      if (!response.ok) throw new Error(result?.message || "Não conseguimos enviar as suas respostas agora.");
       setStatus("success");
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -109,12 +119,11 @@ export default function BriefingForm() {
       topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       setStatus("error");
-      setMessage((error as Error).message || "Não conseguimos enviar o briefing agora.");
+      setMessage((error as Error).message || "Não conseguimos enviar as suas respostas agora.");
     }
   };
 
   if (status === "success") {
-    const empresa = String(answers.empresa ?? "").trim();
     return (
       <div ref={topRef} className={`${styles.card} ${styles.done}`}>
         <div className={styles.doneIcon} aria-hidden>
@@ -123,15 +132,10 @@ export default function BriefingForm() {
           </svg>
         </div>
         <h2 className={styles.stepTitle}>
-          Briefing <span className={styles.purple}>enviado!</span>
+          {form.successTitle[0]} <span className={styles.purple}>{form.successTitle[1]}</span>
         </h2>
-        <p className={styles.doneText}>
-          Obrigado, {String(answers.nome ?? "").split(" ")[0]}! Recebemos todas as informações e a nossa equipe já vai
-          começar a pensar na sua landing page. Em breve entraremos em contato.
-        </p>
-        <Button href={whatsappLink(`Olá, Linka! Acabei de enviar o briefing da landing page${empresa ? ` da ${empresa}` : ""}.`)}>
-          Avisar no WhatsApp
-        </Button>
+        <p className={styles.doneText}>{form.successText(String(answers.nome ?? "").trim().split(" ")[0])}</p>
+        <Button href={whatsappLink(form.whatsappDone(answers))}>Avisar no WhatsApp</Button>
       </div>
     );
   }
@@ -141,7 +145,7 @@ export default function BriefingForm() {
 
   return (
     <div ref={topRef} className={styles.wrapper}>
-      <nav className={styles.stepper} aria-label="Etapas do briefing">
+      <nav className={styles.stepper} aria-label="Etapas do formulário">
         <div className={styles.progressInfo}>
           <span>{step < REVIEW ? `Etapa ${step + 1} de ${steps.length}` : "Revisão final"}</span>
           <span className={styles.purple}>{progress}%</span>
@@ -149,7 +153,7 @@ export default function BriefingForm() {
         <div className={styles.progressTrack}>
           <div className={styles.progressBar} style={{ width: `${Math.max(progress, 4)}%` }} />
         </div>
-        <ol className={styles.stepList}>
+        <ol className={styles.stepList} style={{ "--steps": REVIEW + 1 } as CSSProperties}>
           {[...steps.map((s) => `${s.title} ${s.highlight}`.trim()), "Revisão"].map((name, index) => (
             <li key={name}>
               <button
@@ -195,13 +199,13 @@ export default function BriefingForm() {
                     error={errors[field.name]}
                     files={files}
                     onChange={update}
-                    onFilesChange={setFiles}
+                    onFilesChange={updateFiles}
                   />
                 ))}
             </div>
           </>
         ) : (
-          <Review answers={answers} files={files} onEdit={goTo} />
+          <Review steps={steps} answers={answers} files={files} onEdit={goTo} />
         )}
 
         {status === "error" && (
@@ -212,7 +216,7 @@ export default function BriefingForm() {
             </p>
             <a
               className={styles.alertLink}
-              href={whatsappLink(`Olá, Linka! Segue o briefing da minha landing page:\n\n${buildText(answers, files.map((f) => f.name))}`)}
+              href={whatsappLink(`${form.whatsappFallback}\n\n${buildText(steps, answers, files.map((f) => f.name))}`)}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -230,7 +234,7 @@ export default function BriefingForm() {
             <span />
           )}
           <Button type="submit" isLoading={status === "sending"}>
-            {step < REVIEW - 1 ? "Continuar" : step === REVIEW - 1 ? "Revisar respostas" : "Enviar briefing"}
+            {step < REVIEW - 1 ? "Continuar" : step === REVIEW - 1 ? "Revisar respostas" : form.submitLabel}
           </Button>
         </div>
       </form>
@@ -238,8 +242,10 @@ export default function BriefingForm() {
   );
 }
 
-function Review({ answers, files, onEdit }: { answers: Answers; files: File[]; onEdit: (step: number) => void }) {
-  const sections = buildSections(answers);
+type ReviewProps = { steps: Step[]; answers: Answers; files: File[]; onEdit: (step: number) => void };
+
+function Review({ steps, answers, files, onEdit }: ReviewProps) {
+  const sections = buildSections(steps, answers);
 
   return (
     <>

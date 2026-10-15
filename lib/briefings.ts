@@ -1,4 +1,6 @@
-// Leitura e gravação dos briefings no Supabase. Só para uso no servidor.
+// Leitura e gravação das respostas no Supabase. Só para uso no servidor.
+// Os dois formulários usam a mesma tabela; a coluna `formulario` diz de qual veio cada linha.
+import { toFormId, type FormId } from "./forms";
 import type { Answers } from "./questions";
 import { BUCKET, getSupabase } from "./supabase";
 
@@ -7,7 +9,8 @@ export type StoredFile = { name: string; path: string; size: number };
 export type Briefing = {
   id: string;
   created_at: string;
-  empresa: string;
+  formulario: FormId;
+  empresa: string | null;
   nome: string;
   email: string;
   whatsapp: string | null;
@@ -22,8 +25,11 @@ const safeName = (name: string) =>
     .replace(/[^\w.-]+/g, "-")
     .slice(-120);
 
-/** Salva o briefing e os arquivos. Retorna o id, ou lança erro se o banco falhar. */
-export async function saveBriefing(answers: Answers, files: File[]): Promise<string> {
+/** Linhas gravadas antes da coluna `formulario` existir são todas do briefing. */
+const withForm = (row: Briefing): Briefing => ({ ...row, formulario: toFormId(row.formulario) });
+
+/** Salva as respostas e os arquivos. Retorna o id, ou lança erro se o banco falhar. */
+export async function saveBriefing(formulario: FormId, answers: Answers, files: File[]): Promise<string> {
   const supabase = getSupabase();
   if (!supabase) throw new Error("Supabase não configurado.");
 
@@ -41,7 +47,9 @@ export async function saveBriefing(answers: Answers, files: File[]): Promise<str
 
   const { error } = await supabase.from("briefings").insert({
     id,
-    empresa: String(answers.empresa ?? ""),
+    // "briefing" é o padrão da coluna; omitir mantém o briefing salvando mesmo antes da migração.
+    ...(formulario === "briefing" ? {} : { formulario }),
+    empresa: formulario === "briefing" ? String(answers.empresa ?? "") : null,
     nome: String(answers.nome ?? ""),
     email: String(answers.email ?? "").trim(),
     whatsapp: String(answers.whatsapp ?? "") || null,
@@ -65,14 +73,14 @@ export async function listBriefings(): Promise<Briefing[]> {
     .order("created_at", { ascending: false })
     .limit(1000);
   if (error) throw new Error(error.message);
-  return data as Briefing[];
+  return (data as Briefing[]).map(withForm);
 }
 
 export async function getBriefing(id: string): Promise<Briefing | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { data, error } = await requireSupabase().from("briefings").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
-  return data as Briefing | null;
+  return data ? withForm(data as Briefing) : null;
 }
 
 /** Links temporários (1 hora) para baixar os arquivos do bucket privado. */

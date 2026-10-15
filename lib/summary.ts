@@ -1,4 +1,4 @@
-import { isFilled, isVisible, OTHER, otherKey, steps, type Answers, type Field, type Reference } from "./questions";
+import { isFilled, isVisible, OTHER, otherKey, type Answers, type Field, type Reference, type Step } from "./questions";
 
 type Line = { label: string; value: string };
 type Section = { title: string; lines: Line[] };
@@ -21,7 +21,7 @@ function formatValue(field: Field, answers: Answers): string {
 }
 
 /** Respostas agrupadas por etapa, só com o que foi preenchido. */
-export function buildSections(answers: Answers): Section[] {
+export function buildSections(steps: Step[], answers: Answers): Section[] {
   return steps
     .map((step) => ({
       title: `${step.title} ${step.highlight}`.trim(),
@@ -32,8 +32,8 @@ export function buildSections(answers: Answers): Section[] {
     .filter((section) => section.lines.length > 0);
 }
 
-export function buildText(answers: Answers, fileNames: string[] = []): string {
-  const sections = buildSections(answers).map(
+export function buildText(steps: Step[], answers: Answers, fileNames: string[] = []): string {
+  const sections = buildSections(steps, answers).map(
     (section) =>
       `*${section.title.toUpperCase()}*\n` +
       section.lines.map((line) => `${line.label}${line.label.endsWith("?") ? "" : ":"}\n${line.value}`).join("\n\n"),

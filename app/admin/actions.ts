@@ -13,6 +13,7 @@ import {
   requireAdmin,
 } from "@/lib/auth";
 import { deleteBriefing } from "@/lib/briefings";
+import { toFormId } from "@/lib/forms";
 
 export type LoginState = { error: string } | undefined;
 
@@ -41,5 +42,5 @@ export async function logout() {
 export async function removeBriefing(form: FormData) {
   await requireAdmin();
   await deleteBriefing(String(form.get("id") ?? ""));
-  redirect("/admin");
+  redirect(`/admin?form=${toFormId(form.get("form"))}`);
 }

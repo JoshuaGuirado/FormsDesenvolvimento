@@ -1,38 +1,48 @@
-import BriefingAnimation from "@/components/BriefingAnimation/BriefingAnimation";
-import BriefingForm from "@/components/BriefingForm/BriefingForm";
+import type { Metadata } from "next";
 import Footer from "@/components/Footer/Footer";
-import styles from "./page.module.css";
+import styles from "@/components/FormPage/FormPage.module.css";
+import { FORM_IDS, FORMS } from "@/lib/forms";
+import logo from "@/public/images/logo-linka.png";
 
+export const metadata: Metadata = {
+  title: "Formulários - Linka Mídia",
+  description: "Escolha o formulário que você vai preencher.",
+};
+
+/** Tela inicial: a pessoa escolhe qual formulário vai preencher. */
 export default function Home() {
   return (
     <>
       <main className={styles.main}>
         <div className={styles.glow} aria-hidden />
         <header className={styles.header}>
-          <img src="/images/logo-linka.png" alt="Linka Mídia" className={styles.logo} />
+          <img src={logo.src} alt="Linka Mídia" className={styles.logo} />
           <h1 className={styles.title}>
-            Briefing de <span className={styles.purple}>Landing Page</span>
+            Qual formulário você vai <span className={styles.purple}>preencher?</span>
           </h1>
-          <p className={styles.subtitle}>Chegou a hora de tirar a sua landing page do papel.</p>
-          <p className={styles.intro}>
-            Preencha as informações abaixo com atenção e carinho para que a nossa equipe consiga desenvolver uma página
-            estratégica, alinhada aos objetivos da sua empresa e preparada para gerar mais resultados reais. Quanto mais
-            detalhes você compartilhar, mais assertiva será a estrutura da página, tanto no design quanto na comunicação
-            e na conversão.
-          </p>
-          <p className={styles.meta}>
-            <span>Tempo estimado: 10 a 15 minutos</span>
-            <span>Seu progresso fica salvo neste navegador</span>
-          </p>
+          <p className={styles.subtitle}>Escolha uma das opções abaixo para começar.</p>
         </header>
-        <BriefingForm />
-        <section className={styles.journey} aria-label="Como funciona">
-          <p className={styles.eyebrow}>Como funciona</p>
-          <h2 className={styles.journeyTitle}>
-            Do briefing à página <span className={styles.purple}>no ar</span>
-          </h2>
-          <BriefingAnimation />
-        </section>
+        <nav className={styles.choices} aria-label="Formulários">
+          {FORM_IDS.map((id, index) => {
+            const form = FORMS[id];
+            return (
+              <a key={id} href={form.path} className={styles.choice}>
+                <span className={styles.choiceNumber}>{index + 1}</span>
+                <span className={styles.choiceBody}>
+                  <span className={styles.choiceLabel}>{form.card.label}</span>
+                  <span className={styles.choiceTitle}>
+                    {form.page.title} <span className={styles.purple}>{form.page.highlight}</span>
+                  </span>
+                  <span className={styles.choiceText}>{form.card.description}</span>
+                  <span className={styles.choiceTime}>{form.page.time.replace("Tempo estimado: ", "")}</span>
+                </span>
+                <span className={styles.choiceArrow} aria-hidden>
+                  →
+                </span>
+              </a>
+            );
+          })}
+        </nav>
       </main>
       <Footer />
     </>
