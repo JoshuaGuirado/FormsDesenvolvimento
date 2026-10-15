@@ -10,7 +10,8 @@ import { buildSections, buildText } from "@/lib/summary";
 import logo from "@/public/images/logo-linka.png";
 import styles from "./BriefingForm.module.css";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5544998019947";
+// WhatsApp da Linka, (44) 99801-9947, usado pelos dois formulários (DDI + DDD + número).
+const WHATSAPP = "5544998019947";
 
 type Status = "idle" | "sending" | "success" | "error";
 type Draft = { answers: Answers; step: number; visited: number };
