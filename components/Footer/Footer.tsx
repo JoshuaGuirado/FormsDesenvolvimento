@@ -64,7 +64,10 @@ export default function Footer() {
 
       <p className={styles.copyright}>
         © {new Date().getFullYear()} Linka Mídia · Av. Carneiro Leão, 833 - Sala 04, Maringá - PR · CNPJ
-        43.961.116/0001-08
+        43.961.116/0001-08 ·{" "}
+        <a href="/admin" rel="nofollow" className={styles.teamLink}>
+          Área da equipe
+        </a>
       </p>
     </footer>
   );
