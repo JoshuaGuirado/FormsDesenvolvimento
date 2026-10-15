@@ -1,4 +1,5 @@
 import logo from "@/public/images/logo-linka.png";
+import { withBase } from "@/lib/base-path";
 import styles from "./Footer.module.css";
 
 const iconProps = {
@@ -66,7 +67,7 @@ export default function Footer() {
       <p className={styles.copyright}>
         © {new Date().getFullYear()} Linka Mídia · Av. Carneiro Leão, 833 - Sala 04, Maringá - PR · CNPJ
         43.961.116/0001-08 ·{" "}
-        <a href="/admin" rel="nofollow" className={styles.teamLink}>
+        <a href={withBase("/admin")} rel="nofollow" className={styles.teamLink}>
           Área da equipe
         </a>
       </p>

@@ -1,5 +1,5 @@
 // Recebe o envio de um formulário: valida, salva no Supabase e manda por e-mail.
-// Usado pelas rotas /formsbriefing/enviar, /formsseletivo/enviar e /api/briefing.
+// Usado pelas rotas /forms/briefing/enviar, /forms/seletivo/enviar e /forms/api/briefing.
 import nodemailer from "nodemailer";
 import { FORMS, type FormId } from "@/lib/forms";
 import {

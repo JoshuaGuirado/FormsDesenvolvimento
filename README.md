@@ -4,11 +4,11 @@ Plataforma de formulários da [Linka Mídia](https://www.linkamidia.com.br/), co
 
 | Endereço | Formulário | Perguntas |
 | --- | --- | --- |
-| `/` | Tela de escolha: a pessoa clica em qual formulário vai preencher | — |
-| `/formsbriefing` | Briefing de landing page (clientes) | [`lib/questions.ts`](lib/questions.ts) |
-| `/formsseletivo` | Processo seletivo (candidatos escolhem a vaga no topo; o link `?vaga=designer` já vem com a vaga marcada) | [`lib/questions-seletivo.ts`](lib/questions-seletivo.ts) |
+| `/forms` | Tela de escolha: a pessoa clica em qual formulário vai preencher | — |
+| `/forms/briefing` | Briefing de landing page (clientes) | [`lib/questions.ts`](lib/questions.ts) |
+| `/forms/seletivo` | Processo seletivo (candidatos escolhem a vaga no topo; o link `?vaga=designer` já vem com a vaga marcada) | [`lib/questions-seletivo.ts`](lib/questions-seletivo.ts) |
 
-As respostas dos dois ficam salvas no mesmo **Supabase** e aparecem no mesmo **painel administrativo** (`/admin`), separadas em abas. Também chegam por **e-mail** (com os arquivos anexados), e a pessoa pode avisar a Linka pelo **WhatsApp** ao terminar.
+As respostas dos dois ficam salvas no mesmo **Supabase** e aparecem no mesmo **painel administrativo** (`/forms/admin`), separadas em abas. Também chegam por **e-mail** (com os arquivos anexados), e a pessoa pode avisar a Linka pelo **WhatsApp** ao terminar.
 
 ## Como funciona
 
@@ -16,27 +16,20 @@ As respostas dos dois ficam salvas no mesmo **Supabase** e aparecem no mesmo **p
 - Upload de logo/manual de marca (até 4 MB no total) e campo de link para arquivos grandes (Drive, WeTransfer).
 - Lista de sites de referência com "o que você gostou em cada um".
 - O progresso fica salvo no navegador do cliente: se ele fechar a página, continua de onde parou.
-- Ao enviar, a rota `/api/briefing` salva as respostas e os arquivos no Supabase e manda um e-mail formatado para a Linka (o "Responder" vai direto para o cliente) e, opcionalmente, uma cópia para o cliente. Basta um dos dois (banco ou e-mail) funcionar para o envio dar certo.
+- Ao enviar, a rota `/forms/briefing/enviar` (ou `/forms/seletivo/enviar`) salva as respostas e os arquivos no Supabase e manda um e-mail formatado para a Linka (o "Responder" vai direto para o cliente) e, opcionalmente, uma cópia para o cliente. Basta um dos dois (banco ou e-mail) funcionar para o envio dar certo.
 - Se tudo falhar, o cliente pode mandar as respostas pelo WhatsApp com um clique.
 
-## Usando no domínio da Linka (www.linkamidia.com.br/formsbriefing)
+## Usando no domínio da Linka (www.linkamidia.com.br/forms)
 
-O app já está preparado para rodar dentro do site da Linka: todo o CSS, JS e imagens ficam em `/forms-static/...` (`assetPrefix` no [`next.config.ts`](next.config.ts)) e o envio vai para `/formsbriefing/enviar` e `/formsseletivo/enviar`. Basta o site principal repassar esses caminhos para este projeto. Se o site da Linka for Next.js na Vercel, adicione no `next.config` dele (troque pelo domínio deste projeto na Vercel):
+Todo o app fica sob `/forms` (`basePath` no [`next.config.ts`](next.config.ts)): páginas, painel, envio e arquivos. O site da Linka (`linka-midia-site`) só repassa esse caminho para este projeto no `vercel.json` dele:
 
-```js
-async rewrites() {
-  const FORMS = "https://SEU-PROJETO-DE-FORMS.vercel.app";
-  return [
-    { source: "/formsbriefing/:path*", destination: `${FORMS}/formsbriefing/:path*` },
-    { source: "/formsseletivo/:path*", destination: `${FORMS}/formsseletivo/:path*` },
-    { source: "/forms-static/:path*", destination: `${FORMS}/forms-static/:path*` },
-  ];
-}
+```json
+{ "source": "/forms/:path*", "destination": "https://formslinka.vercel.app/forms/:path*" }
 ```
 
-O painel (`/admin`) continua sendo acessado pelo domínio deste projeto na Vercel.
+Endereços finais: `www.linkamidia.com.br/forms/briefing`, `/forms/seletivo` e `/forms/admin`. Os endereços antigos (`/formsbriefing`, `/formsseletivo`, `/admin`) redirecionam para os novos.
 
-## Painel administrativo (`/admin`)
+## Painel administrativo (`/forms/admin`)
 
 - Login com uma senha única da equipe, guardada só na variável `ADMIN_PASSWORD` da Vercel. Ela nunca vai para o código, para o GitHub nem para o navegador.
 - Depois de 5 senhas erradas, o IP fica bloqueado por 15 minutos. A sessão dura 7 dias; trocar a senha desconecta todo mundo.
@@ -56,7 +49,7 @@ As tabelas ficam com RLS ligado e sem políticas: a chave pública não acessa n
 
 ### Supabase sem pausar
 
-O plano grátis pausa o projeto depois de 7 dias sem uso. O [`vercel.json`](vercel.json) agenda um Cron da Vercel que chama `/api/keepalive` a cada 2 dias (12h UTC); a rota grava na tabela `keepalive` e conta quantas vezes rodou. A rota só responde a quem manda o `CRON_SECRET`, que a Vercel envia sozinha. Para conferir, veja a tabela `keepalive` no Supabase ou **Settings → Cron Jobs** na Vercel.
+O plano grátis pausa o projeto depois de 7 dias sem uso. O [`vercel.json`](vercel.json) agenda um Cron da Vercel que chama `/forms/api/keepalive` a cada 2 dias (12h UTC); a rota grava na tabela `keepalive` e conta quantas vezes rodou. A rota só responde a quem manda o `CRON_SECRET`, que a Vercel envia sozinha. Para conferir, veja a tabela `keepalive` no Supabase ou **Settings → Cron Jobs** na Vercel.
 
 ## Editar as perguntas
 
@@ -70,12 +63,12 @@ cp .env.example .env.local   # preencha SUPABASE_*, ADMIN_PASSWORD, CRON_SECRET,
 npm run dev
 ```
 
-Acesse http://localhost:3000 (escolha do formulário) e http://localhost:3000/admin (painel).
+Acesse http://localhost:3000/forms (escolha do formulário) e http://localhost:3000/forms/admin (painel).
 
 ## Publicando na Vercel
 
 1. Importe este repositório na Vercel (Add New → Project).
 2. Em **Settings → Environment Variables**, cadastre as variáveis do `.env.example`.
-3. Faça o deploy e envie os links (`/formsbriefing` para clientes, `/formsseletivo` para candidatos), direto pelo domínio da Vercel ou pelo site da Linka (veja acima).
+3. Faça o deploy e envie os links (`www.linkamidia.com.br/forms/briefing` para clientes, `www.linkamidia.com.br/forms/seletivo` para candidatos).
 
 > O limite de 4 MB para anexos existe porque a Vercel aceita no máximo 4,5 MB por envio. Arquivos maiores devem ir pelo campo de link.

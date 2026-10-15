@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer/Footer";
 import styles from "@/components/FormPage/FormPage.module.css";
+import { withBase } from "@/lib/base-path";
 import { FORM_IDS, FORMS } from "@/lib/forms";
 import logo from "@/public/images/logo-linka.png";
 
@@ -26,7 +27,7 @@ export default function Home() {
           {FORM_IDS.map((id, index) => {
             const form = FORMS[id];
             return (
-              <a key={id} href={form.path} className={styles.choice}>
+              <a key={id} href={withBase(form.path)} className={styles.choice}>
                 <span className={styles.choiceNumber}>{index + 1}</span>
                 <span className={styles.choiceBody}>
                   <span className={styles.choiceLabel}>{form.card.label}</span>

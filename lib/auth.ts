@@ -4,6 +4,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { BASE_PATH } from "./base-path";
 import { getSupabase } from "./supabase";
 
 export const SESSION_COOKIE = "linka_admin";
@@ -42,13 +43,13 @@ export async function createSession() {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/admin",
+    path: `${BASE_PATH}/admin`,
     expires: new Date(expires),
   });
 }
 
 export async function destroySession() {
-  (await cookies()).delete({ name: SESSION_COOKIE, path: "/admin" });
+  (await cookies()).delete({ name: SESSION_COOKIE, path: `${BASE_PATH}/admin` });
 }
 
 export async function isAuthenticated() {

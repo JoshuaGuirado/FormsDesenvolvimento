@@ -4,7 +4,7 @@
 import type { Answers, Step } from "./questions";
 
 /**
- * Vagas abertas. `id` vai no link (/formsseletivo?vaga=designer) e no filtro do painel;
+ * Vagas abertas. `id` vai no link (/forms/seletivo?vaga=designer) e no filtro do painel;
  * `area` completa as perguntas ("referências para você em edição de vídeos").
  */
 export const VAGAS = [

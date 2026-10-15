@@ -9,6 +9,7 @@ import { isVisible, validateField, type Answers, type Field, type Step } from "@
 import { buildSections, buildText } from "@/lib/summary";
 import logo from "@/public/images/logo-linka.png";
 import styles from "./BriefingForm.module.css";
+import { withBase } from "@/lib/base-path";
 
 // WhatsApp da Linka, (44) 99801-9947, usado pelos dois formulários (DDI + DDD + número).
 const WHATSAPP = "5544998019947";
@@ -44,7 +45,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
         setVisited(Math.min(draft.visited, REVIEW));
       }
     } catch {}
-    // Link que já vem com a vaga escolhida: /formsseletivo?vaga=designer
+    // Link que já vem com a vaga escolhida: /forms/seletivo?vaga=designer
     if (headerField?.optionIds) {
       const index = headerField.optionIds.indexOf(new URLSearchParams(location.search).get(headerField.name) ?? "");
       const option = headerField.options?.[index];
@@ -118,8 +119,8 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
     files.forEach((file) => body.append("arquivos", file));
 
     try {
-      // Endereço relativo ao formulário, para funcionar também em www.linkamidia.com.br/formsbriefing.
-      const response = await fetch(`${form.path}/enviar`, { method: "POST", body });
+      // Endereço relativo ao formulário, para funcionar também em www.linkamidia.com.br/forms/briefing.
+      const response = await fetch(withBase(`${form.path}/enviar`), { method: "POST", body });
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.message || "Não conseguimos enviar as suas respostas agora.");
       setStatus("success");

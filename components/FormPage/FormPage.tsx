@@ -4,7 +4,7 @@ import Footer from "@/components/Footer/Footer";
 import type { FormId } from "@/lib/forms";
 import styles from "./FormPage.module.css";
 
-/** Página pública de um formulário (/formsbriefing ou /formsseletivo). */
+/** Página pública de um formulário (/forms/briefing ou /forms/seletivo). */
 export default function FormPage({ formId }: { formId: FormId }) {
   // O topo (logo, título e textos) é desenhado pelo BriefingForm, porque no
   // processo seletivo ele traz a escolha da vaga.

@@ -50,7 +50,7 @@ const text = (answers: Answers, name: string) => String(answers[name] ?? "").tri
 export const FORMS: Record<FormId, FormDef> = {
   briefing: {
     id: "briefing",
-    path: "/formsbriefing",
+    path: "/briefing",
     steps: briefingSteps,
     draftKey: "linka-briefing-rascunho",
     noun: "briefing",
@@ -94,7 +94,7 @@ export const FORMS: Record<FormId, FormDef> = {
   },
   seletivo: {
     id: "seletivo",
-    path: "/formsseletivo",
+    path: "/seletivo",
     steps: seletivoSteps,
     draftKey: "linka-seletivo-rascunho",
     noun: "candidatura",
