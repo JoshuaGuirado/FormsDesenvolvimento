@@ -1,7 +1,7 @@
 // Os formulários da plataforma. Cada um tem suas perguntas e seus textos;
 // o banco, o e-mail e o painel são os mesmos para todos.
 import { briefingSteps, type Answers, type Step } from "./questions";
-import { seletivoSteps } from "./questions-seletivo";
+import { seletivoSteps, vagaOf } from "./questions-seletivo";
 
 export type FormId = "briefing" | "seletivo";
 
@@ -27,12 +27,12 @@ export type FormDef = {
     metaTitle: string;
   };
   /** Cartão da tela inicial. */
-  card: { label: string; description: string };
+  card: { label: string; title: string; highlight: string; description: string };
   submitLabel: string;
   successTitle: [string, string];
   successText: (firstName: string) => string;
   whatsappDone: (answers: Answers) => string;
-  whatsappFallback: string;
+  whatsappFallback: (answers: Answers) => string;
   email: {
     from: string;
     subject: (answers: Answers) => string;
@@ -68,6 +68,8 @@ export const FORMS: Record<FormId, FormDef> = {
     },
     card: {
       label: "Sou cliente",
+      title: "Briefing de",
+      highlight: "Landing Page",
       description: "Conte sobre o seu negócio para criarmos a sua landing page.",
     },
     submitLabel: "Enviar briefing",
@@ -78,7 +80,7 @@ export const FORMS: Record<FormId, FormDef> = {
       const empresa = text(answers, "empresa");
       return `Olá, Linka! Acabei de enviar o briefing da landing page${empresa ? ` da ${empresa}` : ""}.`;
     },
-    whatsappFallback: "Olá, Linka! Segue o briefing da minha landing page:",
+    whatsappFallback: () => "Olá, Linka! Segue o briefing da minha landing page:",
     email: {
       from: "Briefing Linka Mídia",
       subject: (answers) => `Novo briefing de landing page: ${text(answers, "empresa")}`,
@@ -100,35 +102,43 @@ export const FORMS: Record<FormId, FormDef> = {
     person: "candidato",
     personPlural: "candidatos",
     page: {
+      // O destaque do título é a escolha da vaga (campo "vaga" com header: true).
       title: "Processo seletivo:",
-      highlight: "Gestor(a) de tráfego",
-      subtitle: "Responda a este formulário para se candidatar à vaga de Gestor(a) de tráfego.",
+      highlight: "",
+      subtitle: "Escolha acima a vaga que você quer se candidatar e responda ao formulário abaixo.",
       intro:
         "Pedimos que você responda todas as perguntas com muita honestidade, pois esta será uma boa ferramenta para podermos te conhecer. Além disso, é o que vai te possibilitar avançar para a próxima fase do processo seletivo.",
       time: "Tempo estimado: 20 a 30 minutos",
-      metaTitle: "Processo seletivo: Gestor(a) de tráfego - Linka Mídia",
+      metaTitle: "Processo seletivo - Linka Mídia",
     },
     card: {
       label: "Quero trabalhar na Linka",
-      description: "Candidate-se à vaga de Gestor(a) de tráfego.",
+      title: "Processo",
+      highlight: "seletivo",
+      description: "Candidate-se a uma das vagas abertas: tráfego, vídeo, conteúdo, marketing e design.",
     },
     submitLabel: "Enviar candidatura",
     successTitle: ["Candidatura", "enviada!"],
     successText: (firstName) =>
       `Obrigado, ${firstName}! Recebemos as suas respostas e o seu currículo. Nossa equipe vai analisar tudo com atenção e entrará em contato sobre a próxima fase do processo seletivo.`,
-    whatsappDone: () => "Olá, Linka! Acabei de enviar minha candidatura para a vaga de Gestor(a) de tráfego.",
-    whatsappFallback: "Olá, Linka! Segue minha candidatura para a vaga de Gestor(a) de tráfego:",
+    whatsappDone: (answers) =>
+      `Olá, Linka! Acabei de enviar minha candidatura para a vaga de ${vagaOf(answers).name}.`,
+    whatsappFallback: (answers) => `Olá, Linka! Segue minha candidatura para a vaga de ${vagaOf(answers).name}:`,
     email: {
       from: "Processo seletivo Linka Mídia",
-      subject: (answers) => `Nova candidatura (Gestor(a) de tráfego): ${text(answers, "nome")}`,
-      heading: (answers) => `Nova candidatura: ${text(answers, "nome")}`,
+      subject: (answers) => `Nova candidatura (${vagaOf(answers).name}): ${text(answers, "nome")}`,
+      heading: (answers) => `${vagaOf(answers).name}: ${text(answers, "nome")}`,
       clientSubject: "Recebemos a sua candidatura — Linka Mídia",
-      clientIntro: () =>
-        "Recebemos a sua candidatura para a vaga de Gestor(a) de tráfego. Nossa equipe vai analisar as suas respostas e entrar em contato em breve.",
+      clientIntro: (answers) =>
+        `Recebemos a sua candidatura para a vaga de ${vagaOf(answers).name}. Nossa equipe vai analisar as suas respostas e entrar em contato em breve.`,
     },
     title: (row) => row.nome,
     subtitle: (row) =>
-      [text(row.answers, "idade") && `${text(row.answers, "idade")} anos`, text(row.answers, "ondeMora")]
+      [
+        vagaOf(row.answers).name,
+        text(row.answers, "idade") && `${text(row.answers, "idade")} anos`,
+        text(row.answers, "ondeMora"),
+      ]
         .filter(Boolean)
         .join(" · "),
   },

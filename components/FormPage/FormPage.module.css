@@ -198,3 +198,83 @@
     padding: 24px 20px;
   }
 }
+
+/* Escolha da vaga no topo do processo seletivo */
+.picker {
+  margin: 18px auto 0;
+  max-width: 100%;
+}
+.pickerSelect {
+  max-width: 100%;
+  padding: 10px 64px 12px 28px;
+  font-family: inherit;
+  font-size: clamp(1.5rem, 4.4vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #9272f1;
+  text-align: center;
+  text-align-last: center;
+  cursor: pointer;
+  appearance: none;
+  background: #9272f114
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%239272f1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
+    no-repeat right 22px center;
+  border: 2px solid #9272f180;
+  border-radius: 20px;
+  outline: none;
+  box-shadow: 0 0 32px #9272f133;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.pickerSelect:hover,
+.pickerSelect:focus-visible {
+  border-color: #9272f1;
+  box-shadow: 0 0 40px #9272f166;
+}
+.pickerSelect[aria-invalid="true"] {
+  border-color: #f58a90;
+}
+.pickerEmpty {
+  color: #b39cf7;
+  animation: pickerPulse 2.4s ease-in-out infinite;
+}
+@keyframes pickerPulse {
+  50% {
+    box-shadow: 0 0 48px #9272f180;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pickerEmpty {
+    animation: none;
+  }
+}
+.pickerSelect option {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: left;
+  color: #fff;
+  background: #161616;
+}
+.pickerValue {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: #9272f1;
+}
+.pickerError {
+  margin: 10px 0 0;
+  font-size: 0.95rem;
+  color: #f58a90;
+}
+@media (max-width: 600px) {
+  .pickerSelect {
+    width: 100%;
+    padding: 10px 48px 12px 18px;
+    background-position: right 14px center;
+    background-size: 22px;
+  }
+}

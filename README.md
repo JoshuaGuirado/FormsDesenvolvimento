@@ -6,7 +6,7 @@ Plataforma de formulários da [Linka Mídia](https://www.linkamidia.com.br/), co
 | --- | --- | --- |
 | `/` | Tela de escolha: a pessoa clica em qual formulário vai preencher | — |
 | `/formsbriefing` | Briefing de landing page (clientes) | [`lib/questions.ts`](lib/questions.ts) |
-| `/formsseletivo` | Processo seletivo: Gestor(a) de tráfego (candidatos) | [`lib/questions-seletivo.ts`](lib/questions-seletivo.ts) |
+| `/formsseletivo` | Processo seletivo (candidatos escolhem a vaga no topo; o link `?vaga=designer` já vem com a vaga marcada) | [`lib/questions-seletivo.ts`](lib/questions-seletivo.ts) |
 
 As respostas dos dois ficam salvas no mesmo **Supabase** e aparecem no mesmo **painel administrativo** (`/admin`), separadas em abas. Também chegam por **e-mail** (com os arquivos anexados), e a pessoa pode avisar a Linka pelo **WhatsApp** ao terminar.
 
@@ -41,10 +41,10 @@ O painel (`/admin`) continua sendo acessado pelo domínio deste projeto na Verce
 - Login com uma senha única da equipe, guardada só na variável `ADMIN_PASSWORD` da Vercel. Ela nunca vai para o código, para o GitHub nem para o navegador.
 - Depois de 5 senhas erradas, o IP fica bloqueado por 15 minutos. A sessão dura 7 dias; trocar a senha desconecta todo mundo.
 - O painel não aparece no Google: as páginas têm `noindex` (meta tag e cabeçalho `X-Robots-Tag`) e nada fica em cache.
-- **Abas:** "Briefings" e "Processo seletivo", cada uma com o seu resumo, lista e relatório.
+- **Abas:** "Briefings" e "Processo seletivo", cada uma com o seu resumo, lista e relatório. No processo seletivo, dá para filtrar por vaga.
 - **Resumo:** total recebido, últimos 7 e 30 dias, e gráfico por semana.
 - **Lista:** com busca. Clicar em um cliente/candidato abre todas as respostas, os links clicáveis, os arquivos para baixar (logo, currículo, portfólio) e os botões de e-mail e WhatsApp.
-- **Relatório:** para cada pergunta de múltipla escolha, quantas pessoas marcaram cada opção (no processo seletivo: renda extra, planos para 5 anos e perfil DISC).
+- **Relatório:** para cada pergunta de múltipla escolha, quantas pessoas marcaram cada opção (no processo seletivo: vaga, renda extra, planos para 5 anos e perfil DISC).
 
 ## Supabase (configurar uma vez)
 

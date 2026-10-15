@@ -1,6 +1,23 @@
-// Perguntas do processo seletivo (vaga de Gestor(a) de tráfego). Funciona como
-// questions.ts: o formulário, a revisão, o e-mail e o painel saem daqui.
-import type { Step } from "./questions";
+// Perguntas do processo seletivo. Funciona como questions.ts: o formulário, a
+// revisão, o e-mail e o painel saem daqui. A pessoa escolhe a vaga no topo da
+// página, e algumas perguntas mudam o texto conforme a vaga.
+import type { Answers, Step } from "./questions";
+
+/**
+ * Vagas abertas. `id` vai no link (/formsseletivo?vaga=designer) e no filtro do painel;
+ * `area` completa as perguntas ("referências para você em edição de vídeos").
+ */
+export const VAGAS = [
+  { id: "trafego", name: "Gestor de Tráfego", area: "gestão de tráfego" },
+  { id: "editor", name: "Editor de Vídeos", area: "edição de vídeos" },
+  { id: "videomaker", name: "Videomaker", area: "produção de vídeos" },
+  { id: "planejamento", name: "Planejamento de Conteúdo", area: "planejamento de conteúdo" },
+  { id: "assistente", name: "Assistente de Marketing", area: "marketing" },
+  { id: "designer", name: "Designer", area: "design" },
+];
+
+/** Candidaturas enviadas antes da escolha de vaga eram todas para Gestor de Tráfego. */
+export const vagaOf = (answers: Answers) => VAGAS.find((v) => v.name === answers.vaga) ?? VAGAS[0];
 
 export const RESUME_EXTENSIONS = [".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".webp", ".ppt", ".pptx", ".zip"];
 
@@ -11,6 +28,16 @@ export const seletivoSteps: Step[] = [
     highlight: "dados",
     description: "Informações básicas para entrarmos em contato com você.",
     fields: [
+      {
+        name: "vaga",
+        label: "Vaga",
+        type: "select",
+        required: true,
+        header: true,
+        placeholder: "Selecione a vaga",
+        options: VAGAS.map((v) => v.name),
+        optionIds: VAGAS.map((v) => v.id),
+      },
       { name: "nome", label: "Qual seu nome completo?", type: "text", required: true },
       { name: "idade", label: "Qual sua idade?", type: "number", required: true, half: true, placeholder: "Ex.: 24" },
       { name: "cpf", label: "Qual seu CPF?", type: "cpf", required: true, half: true, placeholder: "000.000.000-00" },
@@ -73,7 +100,9 @@ export const seletivoSteps: Step[] = [
       },
       {
         name: "referenciasTrafego",
-        label: "Cite três perfis no Instagram que são referências para você em gestão de tráfego e nos diga porquê",
+        label: "Cite três perfis no Instagram que são referências para você na área da vaga e nos diga porquê",
+        labelFor: (answers) =>
+          `Cite três perfis no Instagram que são referências para você em ${vagaOf(answers).area} e nos diga porquê`,
         type: "textarea",
         required: true,
       },
@@ -143,8 +172,13 @@ export const seletivoSteps: Step[] = [
       { name: "visaoTrabalho", label: "Qual a sua visão sobre trabalho?", type: "textarea", required: true },
       { name: "experienciaAgencia", label: "Qual a sua experiência em agência?", type: "textarea", required: true },
       {
+        // Antes da escolha de vaga, esta pergunta era sobre criação de conteúdo.
         name: "experienciaConteudo",
-        label: "Qual a sua experiência com criação de conteúdo?",
+        label: "Qual a sua experiência na área da vaga?",
+        labelFor: (answers) =>
+          answers.vaga
+            ? `Qual a sua experiência com ${vagaOf(answers).area}?`
+            : "Qual a sua experiência com criação de conteúdo?",
         type: "textarea",
         required: true,
       },

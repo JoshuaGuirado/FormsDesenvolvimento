@@ -35,7 +35,7 @@ export function buildStats(briefings: Briefing[], steps: Step[]) {
 
   const choices: ChoiceStat[] = steps.flatMap((step) =>
     step.fields
-      .filter((field) => field.type === "checkbox" || field.type === "radio")
+      .filter((field) => field.type === "checkbox" || field.type === "radio" || field.type === "select")
       .map((field) => {
         const options = [...(field.options ?? []), ...(field.other ? [OTHER] : [])];
         const counts = new Map(options.map((option) => [option, 0]));

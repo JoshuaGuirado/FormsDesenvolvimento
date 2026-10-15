@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
-import { FORMS, type FormId } from "@/lib/forms";
-import { isVisible, validateField, type Answers, type Step } from "@/lib/questions";
+import pageStyles from "@/components/FormPage/FormPage.module.css";
+import { FORMS, type FormDef, type FormId } from "@/lib/forms";
+import { isVisible, validateField, type Answers, type Field, type Step } from "@/lib/questions";
 import { buildSections, buildText } from "@/lib/summary";
+import logo from "@/public/images/logo-linka.png";
 import styles from "./BriefingForm.module.css";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5544998019947";
@@ -20,6 +22,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
   const form = FORMS[formId];
   const { steps, draftKey: DRAFT_KEY } = form;
   const REVIEW = steps.length;
+  const headerField = steps.flatMap((s) => s.fields).find((f) => f.header);
   const [answers, setAnswers] = useState<Answers>({});
   const [files, setFiles] = useState<File[]>([]);
   const [step, setStep] = useState(0);
@@ -40,8 +43,14 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
         setVisited(Math.min(draft.visited, REVIEW));
       }
     } catch {}
+    // Link que já vem com a vaga escolhida: /formsseletivo?vaga=designer
+    if (headerField?.optionIds) {
+      const index = headerField.optionIds.indexOf(new URLSearchParams(location.search).get(headerField.name) ?? "");
+      const option = headerField.options?.[index];
+      if (option) setAnswers((prev) => ({ ...prev, [headerField.name]: option }));
+    }
     setLoaded(true);
-  }, [DRAFT_KEY, REVIEW]);
+  }, [DRAFT_KEY, REVIEW, headerField]);
 
   useEffect(() => {
     if (!loaded || status === "success") return;
@@ -123,8 +132,21 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
     }
   };
 
+  const header = (
+    <PageHeader
+      form={form}
+      field={headerField}
+      answers={answers}
+      error={headerField && errors[headerField.name]}
+      locked={status === "success" || status === "sending"}
+      onChange={update}
+    />
+  );
+
   if (status === "success") {
     return (
+      <>
+      {header}
       <div ref={topRef} className={`${styles.card} ${styles.done}`}>
         <div className={styles.doneIcon} aria-hidden>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -137,6 +159,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
         <p className={styles.doneText}>{form.successText(String(answers.nome ?? "").trim().split(" ")[0])}</p>
         <Button href={whatsappLink(form.whatsappDone(answers))}>Avisar no WhatsApp</Button>
       </div>
+      </>
     );
   }
 
@@ -144,6 +167,8 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
   const current = steps[step];
 
   return (
+    <>
+    {header}
     <div ref={topRef} className={styles.wrapper}>
       <nav className={styles.stepper} aria-label="Etapas do formulário">
         <div className={styles.progressInfo}>
@@ -190,7 +215,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
             </header>
             <div className={styles.fields}>
               {current.fields
-                .filter((field) => isVisible(field, answers))
+                .filter((field) => !field.header && isVisible(field, answers))
                 .map((field) => (
                   <FormField
                     key={field.name}
@@ -216,7 +241,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
             </p>
             <a
               className={styles.alertLink}
-              href={whatsappLink(`${form.whatsappFallback}\n\n${buildText(steps, answers, files.map((f) => f.name))}`)}
+              href={whatsappLink(`${form.whatsappFallback(answers)}\n\n${buildText(steps, answers, files.map((f) => f.name))}`)}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -239,6 +264,7 @@ export default function BriefingForm({ formId }: { formId: FormId }) {
         </div>
       </form>
     </div>
+    </>
   );
 }
 
@@ -292,5 +318,58 @@ function Review({ steps, answers, files, onEdit }: ReviewProps) {
         })}
       </div>
     </>
+  );
+}
+
+type PageHeaderProps = {
+  form: FormDef;
+  field?: Field;
+  answers: Answers;
+  error?: string;
+  locked: boolean;
+  onChange: (name: string, value: Answers[string]) => void;
+};
+
+/** Topo da página. No processo seletivo, o destaque do título é a escolha da vaga. */
+function PageHeader({ form, field, answers, error, locked, onChange }: PageHeaderProps) {
+  const { page } = form;
+  const value = field ? String(answers[field.name] ?? "") : "";
+
+  return (
+    <header className={pageStyles.header}>
+      <img src={logo.src} alt="Linka Mídia" className={pageStyles.logo} />
+      <h1 className={pageStyles.title}>
+        {page.title} {page.highlight && <span className={pageStyles.purple}>{page.highlight}</span>}
+      </h1>
+      {field && (
+        <div className={pageStyles.picker} data-field={field.name}>
+          {locked ? (
+            <p className={pageStyles.pickerValue}>{value}</p>
+          ) : (
+            <select
+              className={`${pageStyles.pickerSelect} ${value ? "" : pageStyles.pickerEmpty}`}
+              value={value}
+              onChange={(e) => onChange(field.name, e.target.value)}
+              aria-label="Selecione a vaga que você quer se candidatar"
+              aria-invalid={!!error}
+            >
+              <option value="" disabled>
+                {field.placeholder}
+              </option>
+              {field.options?.map((option) => (
+                <option key={option}>{option}</option>
+              ))}
+            </select>
+          )}
+          {error && <p className={pageStyles.pickerError}>Selecione a vaga que você quer se candidatar.</p>}
+        </div>
+      )}
+      <p className={pageStyles.subtitle}>{page.subtitle}</p>
+      <p className={pageStyles.intro}>{page.intro}</p>
+      <p className={pageStyles.meta}>
+        <span>{page.time}</span>
+        <span>Seu progresso fica salvo neste navegador</span>
+      </p>
+    </header>
   );
 }

@@ -5,6 +5,7 @@ import {
   ACCEPTED_EXTENSIONS,
   MAX_REFERENCES,
   MAX_UPLOAD_BYTES,
+  fieldLabel,
   OTHER,
   otherKey,
   selectedOptions,
@@ -57,6 +58,23 @@ export default function FormField({ field, answers, error, files, onChange, onFi
             aria-invalid={!!error}
           />
         );
+      case "select":
+        return (
+          <select
+            id={id}
+            className={`${styles.input} ${styles.select}`}
+            value={text}
+            onChange={(e) => onChange(field.name, e.target.value)}
+            aria-invalid={!!error}
+          >
+            <option value="" disabled>
+              {field.placeholder ?? "Selecione"}
+            </option>
+            {field.options?.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        );
       case "radio":
       case "checkbox":
         return <Choices field={field} answers={answers} onChange={onChange} />;
@@ -91,7 +109,7 @@ export default function FormField({ field, answers, error, files, onChange, onFi
   return (
     <div className={`${styles.field} ${field.half ? styles.half : ""}`} data-field={field.name}>
       <Label className={styles.label} {...(isGroup ? {} : { htmlFor: id })}>
-        {field.label}
+        {fieldLabel(field, answers)}
         {field.required && <span className={styles.required}> *</span>}
       </Label>
       {help && <p className={styles.help}>{linkify(help)}</p>}
@@ -137,7 +155,7 @@ function Choices({ field, answers, onChange }: Pick<FormFieldProps, "field" | "a
         <input
           className={styles.input}
           placeholder="Descreva"
-          aria-label={`${field.label} — outro`}
+          aria-label={`${fieldLabel(field, answers)} — outro`}
           value={String(answers[otherKey(field.name)] ?? "")}
           onChange={(e) => onChange(otherKey(field.name), e.target.value)}
           autoFocus

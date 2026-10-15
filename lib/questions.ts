@@ -12,6 +12,7 @@ export type FieldType =
   | "cpf"
   | "textarea"
   | "radio"
+  | "select"
   | "checkbox"
   | "files"
   | "references";
@@ -19,6 +20,12 @@ export type FieldType =
 export type Field = {
   name: string;
   label: string;
+  /** Texto da pergunta que muda conforme outras respostas (ex.: a vaga escolhida). */
+  labelFor?: (answers: Answers) => string;
+  /** Aparece no topo da página, no lugar do destaque do título (ex.: a escolha da vaga). */
+  header?: boolean;
+  /** Apelidos das opções para o link (?vaga=designer), na mesma ordem de `options`. */
+  optionIds?: string[];
   type: FieldType;
   required?: boolean;
   placeholder?: string;
@@ -337,6 +344,9 @@ export function selectedOptions(value: Answers[string] | undefined): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+/** Texto da pergunta para estas respostas. */
+export const fieldLabel = (field: Field, answers: Answers) => field.labelFor?.(answers) ?? field.label;
+
 export function isVisible(field: Field, answers: Answers) {
   if (!field.showIf) return true;
   const { values } = field.showIf;
@@ -372,6 +382,7 @@ export function validateField(field: Field, answers: Answers, fileCount = 0): st
   const value = answers[field.name];
 
   if (field.required && !isFilled(value)) {
+    if (field.type === "select") return "Selecione uma opção.";
     return field.type === "checkbox" || field.type === "radio" ? "Escolha pelo menos uma opção." : "Campo obrigatório.";
   }
   if (field.other && selectedOptions(value).includes(OTHER) && !String(answers[otherKey(field.name)] ?? "").trim()) {

@@ -31,7 +31,7 @@ export default function Home() {
                 <span className={styles.choiceBody}>
                   <span className={styles.choiceLabel}>{form.card.label}</span>
                   <span className={styles.choiceTitle}>
-                    {form.page.title} <span className={styles.purple}>{form.page.highlight}</span>
+                    {form.card.title} <span className={styles.purple}>{form.card.highlight}</span>
                   </span>
                   <span className={styles.choiceText}>{form.card.description}</span>
                   <span className={styles.choiceTime}>{form.page.time.replace("Tempo estimado: ", "")}</span>

@@ -4,6 +4,7 @@ import nodemailer from "nodemailer";
 import { FORMS, type FormId } from "@/lib/forms";
 import {
   ACCEPTED_EXTENSIONS,
+  fieldLabel,
   MAX_REFERENCES,
   MAX_UPLOAD_BYTES,
   OTHER,
@@ -42,7 +43,7 @@ function sanitize(fields: Field[], raw: unknown): Answers {
         url: String(ref?.url ?? "").slice(0, 500),
         nota: String(ref?.nota ?? "").slice(0, 1000),
       }));
-    } else if (field.type === "radio" && typeof value === "string") {
+    } else if ((field.type === "radio" || field.type === "select") && typeof value === "string") {
       if (field.options?.includes(value) || (field.other && value === OTHER)) answers[field.name] = value;
     } else if (typeof value === "string") {
       answers[field.name] = value.slice(0, MAX_TEXT);
@@ -112,7 +113,7 @@ export async function handleSubmission(request: Request, formId: FormId) {
 
   for (const field of fields) {
     const error = validateField(field, answers, files.length);
-    if (error) return fail(`${field.label}: ${error}`);
+    if (error) return fail(`${fieldLabel(field, answers)}: ${error}`);
   }
 
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);

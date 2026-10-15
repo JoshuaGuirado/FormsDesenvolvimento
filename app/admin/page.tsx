@@ -7,6 +7,7 @@ import styles from "@/components/Admin/Admin.module.css";
 import { requireAdmin } from "@/lib/auth";
 import { listBriefings, type Briefing } from "@/lib/briefings";
 import { FORM_IDS, FORMS, toFormId } from "@/lib/forms";
+import { VAGAS, vagaOf } from "@/lib/questions-seletivo";
 import { buildStats } from "@/lib/stats";
 import { explainSupabaseError, supabaseConfigProblem } from "@/lib/supabase";
 
@@ -14,10 +15,15 @@ export const dynamic = "force-dynamic";
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-export default async function AdminPage({ searchParams }: { searchParams: Promise<{ form?: string }> }) {
+type SearchParams = Promise<{ form?: string; vaga?: string }>;
+
+export default async function AdminPage({ searchParams }: { searchParams: SearchParams }) {
   await requireAdmin();
-  const formId = toFormId((await searchParams).form);
+  const params = await searchParams;
+  const formId = toFormId(params.form);
   const form = FORMS[formId];
+  // No processo seletivo dá para ver só uma vaga (?vaga=designer).
+  const vaga = formId === "seletivo" ? VAGAS.find((v) => v.id === params.vaga) : undefined;
 
   let all: Briefing[] = [];
   let problem = supabaseConfigProblem();
@@ -46,8 +52,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     );
   }
 
-  const briefings = all.filter((b) => b.formulario === formId);
+  // Candidaturas antigas, sem vaga gravada, contam como Gestor de Tráfego também no relatório.
+  const ofForm = all
+    .filter((b) => b.formulario === formId)
+    .map((b) => (formId === "seletivo" ? { ...b, answers: { ...b.answers, vaga: vagaOf(b.answers).name } } : b));
+  const briefings = vaga ? ofForm.filter((b) => vagaOf(b.answers).id === vaga.id) : ofForm;
   const stats = buildStats(briefings, form.steps);
+  // Com uma vaga filtrada, o gráfico "Vaga" daria sempre 100%.
+  const choices = stats.choices.filter((stat) => !(vaga && stat.name === "vaga"));
   const rows = briefings.map((b) => ({
     id: b.id,
     createdAt: b.created_at,
@@ -75,10 +87,31 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           ))}
         </nav>
 
+        {formId === "seletivo" && (
+          <nav className={styles.filters} aria-label="Filtrar por vaga">
+            <span className={styles.filtersLabel}>Vaga:</span>
+            {[{ id: "", name: "Todas" }, ...VAGAS].map((item) => {
+              const count = item.id ? ofForm.filter((b) => vagaOf(b.answers).id === item.id).length : ofForm.length;
+              const active = (vaga?.id ?? "") === item.id;
+              return (
+                <Link
+                  key={item.id || "todas"}
+                  href={item.id ? `/admin?form=seletivo&vaga=${item.id}` : "/admin?form=seletivo"}
+                  className={`${styles.filter} ${active ? styles.filterActive : ""}`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {item.name} <span className={styles.filterCount}>{count}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
         <section className={styles.tiles} aria-label="Resumo">
           <div className={styles.tile}>
             <p className={styles.tileLabel}>
               {capitalize(form.nounPlural)} {formId === "briefing" ? "recebidos" : "recebidas"}
+              {vaga && ` · ${vaga.name}`}
             </p>
             <p className={styles.heroValue}>{stats.total}</p>
           </div>
@@ -99,7 +132,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </section>
 
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>{capitalize(form.personPlural)}</h2>
+          <h2 className={styles.cardTitle}>
+            {capitalize(form.personPlural)}
+            {vaga && ` · ${vaga.name}`}
+          </h2>
           <p className={styles.muted}>Clique em um {form.person} para ver todas as respostas.</p>
           <BriefingTable
             rows={rows}
@@ -107,19 +143,23 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             searchPlaceholder={
               formId === "briefing"
                 ? "Buscar por empresa, nome, e-mail ou WhatsApp"
-                : "Buscar por nome, cidade, e-mail ou WhatsApp"
+                : "Buscar por nome, vaga, cidade, e-mail ou WhatsApp"
             }
-            emptyText={`Nenhum${formId === "briefing" ? "" : "a"} ${form.noun} recebid${formId === "briefing" ? "o" : "a"} ainda.`}
+            emptyText={
+              vaga
+                ? `Nenhuma candidatura para ${vaga.name} ainda.`
+                : `Nenhum${formId === "briefing" ? "" : "a"} ${form.noun} recebid${formId === "briefing" ? "o" : "a"} ainda.`
+            }
           />
         </section>
 
-        {stats.total > 0 && stats.choices.length > 0 && (
+        {stats.total > 0 && choices.length > 0 && (
           <section>
             <h2 className={styles.sectionTitle}>
               Relatório das <span className={styles.purple}>respostas</span>
             </h2>
             <div className={styles.grid}>
-              {stats.choices.map((stat) => (
+              {choices.map((stat) => (
                 <ChoiceChart key={stat.name} stat={stat} person={form.person} personPlural={form.personPlural} />
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { isFilled, isVisible, OTHER, otherKey, type Answers, type Field, type Reference, type Step } from "./questions";
+import { fieldLabel, isFilled, isVisible, OTHER, otherKey, type Answers, type Field, type Reference, type Step } from "./questions";
 
 type Line = { label: string; value: string };
 type Section = { title: string; lines: Line[] };
@@ -27,7 +27,7 @@ export function buildSections(steps: Step[], answers: Answers): Section[] {
       title: `${step.title} ${step.highlight}`.trim(),
       lines: step.fields
         .filter((field) => field.type !== "files" && isVisible(field, answers) && isFilled(answers[field.name]))
-        .map((field) => ({ label: field.label, value: formatValue(field, answers) })),
+        .map((field) => ({ label: fieldLabel(field, answers), value: formatValue(field, answers) })),
     }))
     .filter((section) => section.lines.length > 0);
 }

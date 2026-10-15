@@ -526,3 +526,44 @@
   background: #9272f126;
   border-radius: 999px;
 }
+
+/* Filtro por vaga (processo seletivo) */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+}
+.filtersLabel {
+  margin-right: 4px;
+  font-size: 0.9rem;
+  color: #8f8f8f;
+}
+.filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  color: #a8a8a8;
+  text-decoration: none;
+  border: 1px solid #262626;
+  border-radius: 999px;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.filter:hover {
+  color: #fff;
+  border-color: #9272f180;
+}
+.filterActive {
+  color: #fff;
+  background: #9272f126;
+  border-color: #9272f1b3;
+}
+.filterCount {
+  font-size: 0.8rem;
+  color: #c9bcf8;
+}
