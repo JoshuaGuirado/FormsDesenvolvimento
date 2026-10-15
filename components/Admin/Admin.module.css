@@ -16,6 +16,16 @@
   color: #8f8f8f;
   font-size: 0.9rem;
 }
+.problem {
+  margin: 12px 0;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #f9c4c7;
+  background: #f0717814;
+  border: 1px solid #f0717866;
+  border-radius: 10px;
+}
 .purple {
   color: #9272f1;
 }

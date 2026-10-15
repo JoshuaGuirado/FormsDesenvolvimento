@@ -6,26 +6,33 @@ import styles from "@/components/Admin/Admin.module.css";
 import { requireAdmin } from "@/lib/auth";
 import { listBriefings, type Briefing } from "@/lib/briefings";
 import { buildStats } from "@/lib/stats";
+import { explainSupabaseError, supabaseConfigProblem } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   await requireAdmin();
 
-  let briefings: Briefing[];
-  try {
-    briefings = await listBriefings();
-  } catch (error) {
-    console.error("Erro ao carregar os briefings:", error);
+  let briefings: Briefing[] = [];
+  let problem = supabaseConfigProblem();
+  if (!problem) {
+    try {
+      briefings = await listBriefings();
+    } catch (error) {
+      console.error("Erro ao carregar os briefings:", error);
+      problem = explainSupabaseError(error);
+    }
+  }
+  if (problem) {
     return (
       <>
         <AdminHeader />
         <main className={styles.main}>
           <div className={styles.card}>
             <h1 className={styles.cardTitle}>Não foi possível carregar os briefings</h1>
+            <p className={styles.problem}>{problem}</p>
             <p className={styles.muted}>
-              Confira se as variáveis SUPABASE_URL e SUPABASE_SECRET_KEY estão cadastradas e se o arquivo
-              supabase/schema.sql já foi executado no SQL Editor do Supabase.
+              Depois de mudar uma variável na Vercel, faça o Redeploy em Deployments para ela valer.
             </p>
           </div>
         </main>
