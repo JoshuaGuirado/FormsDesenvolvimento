@@ -1,0 +1,130 @@
+.root {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  text-align: left;
+}
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 100%;
+  padding: 10px 22px 12px 28px;
+  font-family: inherit;
+  font-size: clamp(1.5rem, 4.4vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: #9272f1;
+  cursor: pointer;
+  background: #9272f114;
+  border: 2px solid #9272f180;
+  border-radius: 20px;
+  outline: none;
+  box-shadow: 0 0 32px #9272f133;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.trigger:hover,
+.trigger:focus-visible,
+.trigger[aria-expanded="true"] {
+  border-color: #9272f1;
+  box-shadow: 0 0 40px #9272f166;
+}
+.value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chevron {
+  flex: none;
+  width: 0.7em;
+  height: 0.7em;
+  transition: transform 0.2s;
+}
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+.empty {
+  color: #b39cf7;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.invalid {
+  border-color: #f58a90;
+}
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 48px #9272f180;
+  }
+}
+
+/* Lista: tamanho normal, independente da fonte grande do campo */
+.list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  width: max(100%, 280px);
+  max-width: calc(100vw - 32px);
+  max-height: min(360px, 60vh);
+  padding: 6px;
+  overflow-y: auto;
+  background: #161616;
+  border: 1px solid #9272f166;
+  border-radius: 16px;
+  box-shadow:
+    0 24px 48px #000000cc,
+    0 0 32px #9272f126;
+  transform: translateX(-50%);
+  animation: drop 0.15s ease-out;
+}
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+}
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  color: #e0e0e0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+}
+.option:hover,
+.option:focus-visible {
+  color: #fff;
+  background: #9272f126;
+}
+.selected {
+  color: #c9bcf8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .empty,
+  .list {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .root,
+  .trigger {
+    width: 100%;
+  }
+  .trigger {
+    justify-content: space-between;
+    padding: 10px 16px 12px 18px;
+  }
+}

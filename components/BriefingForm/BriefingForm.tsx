@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 
 import Button from "@/components/Button/Button";
 import FormField from "@/components/FormField/FormField";
 import pageStyles from "@/components/FormPage/FormPage.module.css";
+import HeroSelect from "@/components/HeroSelect/HeroSelect";
 import { FORMS, type FormDef, type FormId } from "@/lib/forms";
 import { isVisible, validateField, type Answers, type Field, type Step } from "@/lib/questions";
 import { buildSections, buildText } from "@/lib/summary";
@@ -348,20 +349,14 @@ function PageHeader({ form, field, answers, error, locked, onChange }: PageHeade
           {locked ? (
             <p className={pageStyles.pickerValue}>{value}</p>
           ) : (
-            <select
-              className={`${pageStyles.pickerSelect} ${value ? "" : pageStyles.pickerEmpty}`}
+            <HeroSelect
+              label="Selecione a vaga que você quer se candidatar"
+              placeholder={field.placeholder ?? "Selecione"}
+              options={field.options ?? []}
               value={value}
-              onChange={(e) => onChange(field.name, e.target.value)}
-              aria-label="Selecione a vaga que você quer se candidatar"
-              aria-invalid={!!error}
-            >
-              <option value="" disabled>
-                {field.placeholder}
-              </option>
-              {field.options?.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
+              invalid={!!error}
+              onChange={(option) => onChange(field.name, option)}
+            />
           )}
           {error && <p className={pageStyles.pickerError}>Selecione a vaga que você quer se candidatar.</p>}
         </div>
